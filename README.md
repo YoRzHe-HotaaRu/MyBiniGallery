@@ -1,4 +1,4 @@
-# MyBiniGal
+# MyBiniGalLery
 
 Anime + waifu gallery web app built with React, TypeScript, and Vite. Uses Firebase (Auth + Firestore + Analytics) for user/data management and Cloudinary for image uploads. Includes an admin area for managing anime series and waifu entries.
 
