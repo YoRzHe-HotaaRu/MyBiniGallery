@@ -33,6 +33,10 @@ export default function Navbar() {
     { name: 'Waifus', path: '/waifus' },
   ];
 
+  if (user) {
+    navLinks.push({ name: 'Favourites', path: '/favourites' });
+  }
+
   if (user?.role === 'admin') {
     navLinks.push({ name: 'Admin Dashboard', path: '/admin' });
   }

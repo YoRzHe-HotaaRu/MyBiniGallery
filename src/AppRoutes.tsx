@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import AnimeList from './pages/AnimeList';
 import WaifuList from './pages/WaifuList';
 import WaifuDetail from './pages/WaifuDetail';
+import Favourites from './pages/Favourites';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -20,6 +21,14 @@ export default function AppRoutes() {
         <Route path="/anime" element={<AnimeList />} />
         <Route path="/waifus" element={<WaifuList />} />
         <Route path="/waifu/:id" element={<WaifuDetail />} />
+        <Route
+          path="/favourites"
+          element={
+            <AuthGuard>
+              <Favourites />
+            </AuthGuard>
+          }
+        />
 
         <Route
           path="/admin"

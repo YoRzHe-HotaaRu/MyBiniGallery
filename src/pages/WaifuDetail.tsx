@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Waifu, Anime } from '../types';
-import { Loader, ArrowLeft, Calendar, Image as ImageIcon } from 'lucide-react';
+import { Loader, ArrowLeft, Calendar, Image as ImageIcon, Heart } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
+import { useFavouritesStore } from '../store/favouritesStore';
 
 export default function WaifuDetail() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +13,10 @@ export default function WaifuDetail() {
   const [anime, setAnime] = useState<Anime | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { user } = useAuthStore();
+  const { isFavourite, toggleFavourite } = useFavouritesStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (id) {
@@ -80,14 +86,32 @@ export default function WaifuDetail() {
 
         {/* Info Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div>
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-2">{waifu.name}</h1>
-            <Link 
-              to={`/waifus?anime=${anime?.id}`} 
-              className="text-xl text-pink-600 hover:text-pink-700 font-medium"
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">{waifu.name}</h1>
+              <Link 
+                to={`/waifus?anime=${anime?.id}`} 
+                className="text-xl text-pink-600 hover:text-pink-700 font-medium"
+              >
+                {anime?.title || 'Unknown Series'}
+              </Link>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  navigate('/login', { state: { from: location }, replace: false });
+                  return;
+                }
+                toggleFavourite(user.uid, waifu.id);
+              }}
+              className="mt-1 w-11 h-11 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center hover:bg-pink-50 transition-colors"
+              aria-label="Toggle favourite"
             >
-              {anime?.title || 'Unknown Series'}
-            </Link>
+              <Heart
+                className={`h-6 w-6 ${isFavourite(waifu.id) ? 'text-pink-600 fill-pink-600' : 'text-gray-500'}`}
+              />
+            </button>
           </div>
 
           <div className="prose prose-pink max-w-none text-gray-600">

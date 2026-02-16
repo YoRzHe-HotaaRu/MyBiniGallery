@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { Anime } from '../../types';
-import { Plus, Trash2, Loader } from 'lucide-react';
+import { Plus, Trash2, Loader, Pencil, X } from 'lucide-react';
 
 export default function ManageAnime() {
   const [animes, setAnimes] = useState<Anime[]>([]);
@@ -13,6 +13,7 @@ export default function ManageAnime() {
   const [description, setDescription] = useState('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState<Anime | null>(null);
 
   useEffect(() => {
     fetchAnimes();
@@ -24,8 +25,8 @@ export default function ManageAnime() {
       const querySnapshot = await getDocs(q);
       const animeList = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as any),
-      })) as Anime[];
+        ...(doc.data() as Omit<Anime, 'id'>),
+      }));
       setAnimes(animeList);
     } catch (err) {
       console.error('Error fetching anime:', err);
@@ -42,8 +43,8 @@ export default function ManageAnime() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !coverImage) {
-      setError('Please fill in all fields');
+    if (!title || !description || (!editing && !coverImage)) {
+      setError(editing ? 'Please fill in all fields' : 'Please fill in all fields');
       return;
     }
 
@@ -51,29 +52,62 @@ export default function ManageAnime() {
     setError('');
 
     try {
-      const imageUrl = await uploadToCloudinary(coverImage);
-      
-      await addDoc(collection(db, 'anime'), {
-        title,
-        description,
-        coverImage: imageUrl,
-        createdAt: Date.now(),
-      });
+      let imageUrl = editing?.coverImage ?? '';
+      if (coverImage) {
+        imageUrl = await uploadToCloudinary(coverImage);
+      }
+
+      if (editing) {
+        await updateDoc(doc(db, 'anime', editing.id), {
+          title,
+          description,
+          coverImage: imageUrl,
+          updatedAt: Date.now(),
+        });
+      } else {
+        await addDoc(collection(db, 'anime'), {
+          title,
+          description,
+          coverImage: imageUrl,
+          createdAt: Date.now(),
+        });
+      }
 
       setTitle('');
       setDescription('');
       setCoverImage(null);
+      setEditing(null);
       // Reset file input
       const fileInput = document.getElementById('cover-image') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
       fetchAnimes();
     } catch (err) {
-      console.error('Error adding anime:', err);
-      setError('Failed to add anime');
+      console.error('Error saving anime:', err);
+      setError(editing ? 'Failed to update anime' : 'Failed to add anime');
     } finally {
       setUploading(false);
     }
+  };
+
+  const startEdit = (anime: Anime) => {
+    setEditing(anime);
+    setTitle(anime.title);
+    setDescription(anime.description);
+    setCoverImage(null);
+    setError('');
+    const fileInput = document.getElementById('cover-image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setTitle('');
+    setDescription('');
+    setCoverImage(null);
+    setError('');
+    const fileInput = document.getElementById('cover-image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleDelete = async (id: string) => {
@@ -99,9 +133,23 @@ export default function ManageAnime() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage Anime Series</h1>
 
-      {/* Add New Anime Form */}
+      {/* Add / Edit Anime Form */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Add New Anime</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">
+            {editing ? 'Edit Anime' : 'Add New Anime'}
+          </h2>
+          {editing && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </button>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -124,7 +172,9 @@ export default function ManageAnime() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Cover Image</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Cover Image {editing ? '(optional)' : ''}
+            </label>
             <input
               id="cover-image"
               type="file"
@@ -144,12 +194,16 @@ export default function ManageAnime() {
             {uploading ? (
               <>
                 <Loader className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                Uploading...
+                Saving...
               </>
             ) : (
               <>
-                <Plus className="-ml-1 mr-2 h-4 w-4" />
-                Add Anime
+                {editing ? (
+                  <Pencil className="-ml-1 mr-2 h-4 w-4" />
+                ) : (
+                  <Plus className="-ml-1 mr-2 h-4 w-4" />
+                )}
+                {editing ? 'Save Changes' : 'Add Anime'}
               </>
             )}
           </button>
@@ -175,13 +229,24 @@ export default function ManageAnime() {
                   <p className="text-sm text-gray-500 line-clamp-1">{anime.description}</p>
                 </div>
               </div>
-              <button
-                onClick={() => handleDelete(anime.id)}
-                className="text-red-600 hover:text-red-900 p-2"
-                title="Delete"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => startEdit(anime)}
+                  className="text-gray-500 hover:text-pink-600 p-2"
+                  title="Edit"
+                >
+                  <Pencil className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(anime.id)}
+                  className="text-red-600 hover:text-red-900 p-2"
+                  title="Delete"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
             </li>
           ))}
           {animes.length === 0 && (

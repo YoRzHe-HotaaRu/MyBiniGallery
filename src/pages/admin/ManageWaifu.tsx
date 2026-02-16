@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { Anime, Waifu } from '../../types';
-import { Plus, Trash2, Loader, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Loader, Image as ImageIcon, Pencil, X } from 'lucide-react';
 
 export default function ManageWaifu() {
   const [waifus, setWaifus] = useState<Waifu[]>([]);
@@ -11,6 +11,8 @@ export default function ManageWaifu() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState<Waifu | null>(null);
+  const [clearGallery, setClearGallery] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
@@ -29,12 +31,12 @@ export default function ManageWaifu() {
       // Fetch Anime for dropdown
       const animeQ = query(collection(db, 'anime'), orderBy('title', 'asc'));
       const animeSnapshot = await getDocs(animeQ);
-      setAnimes(animeSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as Anime)));
+      setAnimes(animeSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<Anime, 'id'>) })));
 
       // Fetch Waifus
       const waifuQ = query(collection(db, 'waifus'), orderBy('createdAt', 'desc'));
       const waifuSnapshot = await getDocs(waifuQ);
-      setWaifus(waifuSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as Waifu)));
+      setWaifus(waifuSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<Waifu, 'id'>) })));
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -56,7 +58,7 @@ export default function ManageWaifu() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !animeId || !description || !mainImage) {
+    if (!name || !animeId || !description || (!editing && !mainImage)) {
       setError('Please fill in all required fields');
       return;
     }
@@ -65,27 +67,44 @@ export default function ManageWaifu() {
     setError('');
 
     try {
-      // Upload Main Image
-      const mainImageUrl = await uploadToCloudinary(mainImage);
-
-      // Upload Gallery Images
-      const galleryUrls: string[] = [];
-      if (galleryImages) {
-        for (let i = 0; i < galleryImages.length; i++) {
-          const url = await uploadToCloudinary(galleryImages[i]);
-          galleryUrls.push(url);
-        }
+      let mainImageUrl = editing?.imageUrl ?? '';
+      if (mainImage) {
+        mainImageUrl = await uploadToCloudinary(mainImage);
       }
 
-      await addDoc(collection(db, 'waifus'), {
-        name,
-        animeId,
-        age,
-        description,
-        imageUrl: mainImageUrl,
-        gallery: galleryUrls,
-        createdAt: Date.now(),
-      });
+      let galleryUrls = editing?.gallery ?? [];
+      if (galleryImages) {
+        const uploaded: string[] = [];
+        for (let i = 0; i < galleryImages.length; i++) {
+          const url = await uploadToCloudinary(galleryImages[i]);
+          uploaded.push(url);
+        }
+        galleryUrls = uploaded;
+      } else if (editing && clearGallery) {
+        galleryUrls = [];
+      }
+
+      if (editing) {
+        await updateDoc(doc(db, 'waifus', editing.id), {
+          name,
+          animeId,
+          age,
+          description,
+          imageUrl: mainImageUrl,
+          gallery: galleryUrls,
+          updatedAt: Date.now(),
+        });
+      } else {
+        await addDoc(collection(db, 'waifus'), {
+          name,
+          animeId,
+          age,
+          description,
+          imageUrl: mainImageUrl,
+          gallery: galleryUrls,
+          createdAt: Date.now(),
+        });
+      }
 
       // Reset Form
       setName('');
@@ -94,6 +113,8 @@ export default function ManageWaifu() {
       setDescription('');
       setMainImage(null);
       setGalleryImages(null);
+      setEditing(null);
+      setClearGallery(false);
       
       // Reset file inputs
       (document.getElementById('main-image') as HTMLInputElement).value = '';
@@ -101,11 +122,39 @@ export default function ManageWaifu() {
 
       fetchData(); // Refresh list
     } catch (err) {
-      console.error('Error adding waifu:', err);
-      setError('Failed to add waifu');
+      console.error('Error saving waifu:', err);
+      setError(editing ? 'Failed to update waifu' : 'Failed to add waifu');
     } finally {
       setUploading(false);
     }
+  };
+
+  const startEdit = (waifu: Waifu) => {
+    setEditing(waifu);
+    setName(waifu.name);
+    setAnimeId(waifu.animeId);
+    setAge(waifu.age ?? '');
+    setDescription(waifu.description);
+    setMainImage(null);
+    setGalleryImages(null);
+    setClearGallery(false);
+    setError('');
+    (document.getElementById('main-image') as HTMLInputElement).value = '';
+    (document.getElementById('gallery-images') as HTMLInputElement).value = '';
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setName('');
+    setAnimeId('');
+    setAge('');
+    setDescription('');
+    setMainImage(null);
+    setGalleryImages(null);
+    setClearGallery(false);
+    setError('');
+    (document.getElementById('main-image') as HTMLInputElement).value = '';
+    (document.getElementById('gallery-images') as HTMLInputElement).value = '';
   };
 
   const handleDelete = async (id: string) => {
@@ -135,9 +184,23 @@ export default function ManageWaifu() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage Waifus</h1>
 
-      {/* Add New Waifu Form */}
+      {/* Add / Edit Waifu Form */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Add New Waifu</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">
+            {editing ? 'Edit Waifu' : 'Add New Waifu'}
+          </h2>
+          {editing && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </button>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -189,7 +252,9 @@ export default function ManageWaifu() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Main Image</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Main Image {editing ? '(optional)' : ''}
+              </label>
               <input
                 id="main-image"
                 type="file"
@@ -199,7 +264,9 @@ export default function ManageWaifu() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Gallery Images</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Gallery Images {editing ? '(optional - replaces existing)' : ''}
+              </label>
               <input
                 id="gallery-images"
                 type="file"
@@ -210,6 +277,18 @@ export default function ManageWaifu() {
               />
             </div>
           </div>
+
+          {editing && (
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={clearGallery}
+                onChange={(e) => setClearGallery(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+              />
+              Clear existing gallery
+            </label>
+          )}
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
@@ -221,12 +300,16 @@ export default function ManageWaifu() {
             {uploading ? (
               <>
                 <Loader className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                Uploading...
+                Saving...
               </>
             ) : (
               <>
-                <Plus className="-ml-1 mr-2 h-4 w-4" />
-                Add Waifu
+                {editing ? (
+                  <Pencil className="-ml-1 mr-2 h-4 w-4" />
+                ) : (
+                  <Plus className="-ml-1 mr-2 h-4 w-4" />
+                )}
+                {editing ? 'Save Changes' : 'Add Waifu'}
               </>
             )}
           </button>
@@ -260,6 +343,15 @@ export default function ManageWaifu() {
                   </span>
                 )}
                 <button
+                  type="button"
+                  onClick={() => startEdit(waifu)}
+                  className="text-gray-500 hover:text-pink-600 p-2"
+                  title="Edit"
+                >
+                  <Pencil className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleDelete(waifu.id)}
                   className="text-red-600 hover:text-red-900 p-2"
                   title="Delete"

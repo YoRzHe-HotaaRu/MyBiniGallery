@@ -3,12 +3,16 @@ import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { useSearchParams, Link } from 'react-router-dom';
 import { db } from '../config/firebase';
 import { Anime, Waifu } from '../types';
-import { Loader, ArrowLeft, Search } from 'lucide-react';
+import { Loader, ArrowLeft, Search, Heart } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuthStore } from '../store/authStore';
+import { useFavouritesStore } from '../store/favouritesStore';
 
 export default function WaifuList() {
   const [searchParams] = useSearchParams();
   const animeIdFilter = searchParams.get('anime');
+  const { user } = useAuthStore();
+  const { isFavourite, toggleFavourite } = useFavouritesStore();
 
   const [waifus, setWaifus] = useState<Waifu[]>([]);
   const [animes, setAnimes] = useState<Anime[]>([]);
@@ -139,6 +143,23 @@ export default function WaifuList() {
                   </AnimatePresence>
                 );
               })()}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!user) return;
+                  toggleFavourite(user.uid, waifu.id);
+                }}
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                aria-label="Toggle favourite"
+              >
+                <Heart
+                  className={`h-5 w-5 ${
+                    isFavourite(waifu.id) ? 'text-pink-600 fill-pink-600' : 'text-gray-500'
+                  }`}
+                />
+              </button>
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             <div className="p-4">
