@@ -4,6 +4,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { db } from '../config/firebase';
 import { Anime, Waifu } from '../types';
 import { Loader, Filter } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function WaifuList() {
   const [searchParams] = useSearchParams();
@@ -12,10 +13,19 @@ export default function WaifuList() {
   const [waifus, setWaifus] = useState<Waifu[]>([]);
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     fetchData();
   }, [animeIdFilter]);
+
+  useEffect(() => {
+    const shouldRotate = waifus.some((w) => (w.gallery?.length ?? 0) > 0);
+    if (!shouldRotate) return;
+
+    const id = window.setInterval(() => setTick((t) => t + 1), 5000);
+    return () => window.clearInterval(id);
+  }, [waifus]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -91,11 +101,28 @@ export default function WaifuList() {
             className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
           >
             <div className="aspect-[3/4] relative overflow-hidden">
-              <img
-                src={waifu.imageUrl}
-                alt={waifu.name}
-                className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-              />
+              {(() => {
+                const images = [waifu.imageUrl, ...(waifu.gallery ?? [])].filter(Boolean);
+                const activeIndex = images.length > 0 ? tick % images.length : 0;
+                const activeSrc = images[activeIndex] ?? waifu.imageUrl;
+
+                return (
+                  <AnimatePresence mode="sync" initial={false}>
+                    <motion.img
+                      key={activeSrc}
+                      src={activeSrc}
+                      alt={waifu.name}
+                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      initial={{ opacity: 0, scale: 1.03 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.99 }}
+                      transition={{ duration: 0.5, ease: 'easeInOut' }}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </AnimatePresence>
+                );
+              })()}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             <div className="p-4">
