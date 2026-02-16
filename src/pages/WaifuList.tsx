@@ -23,7 +23,7 @@ export default function WaifuList() {
     const shouldRotate = waifus.some((w) => (w.gallery?.length ?? 0) > 0);
     if (!shouldRotate) return;
 
-    const id = window.setInterval(() => setTick((t) => t + 1), 5000);
+    const id = window.setInterval(() => setTick((t) => t + 1), 8000);
     return () => window.clearInterval(id);
   }, [waifus]);
 
