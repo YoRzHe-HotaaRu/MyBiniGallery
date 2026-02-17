@@ -21,7 +21,7 @@ export default function Layout() {
   }, [user, loading, loadForUser, clear]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Navbar />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait" initial={false}>

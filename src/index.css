@@ -12,3 +12,21 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(1200px 700px at 10% 5%, rgba(236, 72, 153, 0.14), rgba(236, 72, 153, 0) 60%),
+    radial-gradient(1000px 600px at 92% 18%, rgba(168, 85, 247, 0.14), rgba(168, 85, 247, 0) 55%),
+    radial-gradient(900px 700px at 50% 95%, rgba(59, 130, 246, 0.10), rgba(59, 130, 246, 0) 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23ec4899' stroke-opacity='0.10'%3E%3Cpath d='M52 62c0-9 7-16 16-16 7 0 13 4 16 10 3-6 9-10 16-10 9 0 16 7 16 16 0 18-32 34-32 34S52 80 52 62Z'/%3E%3Cpath d='M140 36l2.2 6.3 6.3 2.2-6.3 2.2-2.2 6.3-2.2-6.3-6.3-2.2 6.3-2.2 2.2-6.3Z'/%3E%3Cpath d='M26 28l2.8 8 8 2.8-8 2.8-2.8 8-2.8-8-8-2.8 8-2.8 2.8-8Z'/%3E%3C/g%3E%3Cg fill='%23a855f7' fill-opacity='0.07'%3E%3Ccircle cx='132' cy='118' r='2.2'/%3E%3Ccircle cx='40' cy='132' r='1.8'/%3E%3Ccircle cx='92' cy='22' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: auto, auto, auto, 180px 180px;
+  background-position: center, center, center, 0 0;
+  background-attachment: fixed, fixed, fixed, fixed;
+}
