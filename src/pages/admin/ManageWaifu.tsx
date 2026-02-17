@@ -12,7 +12,9 @@ export default function ManageWaifu() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<Waifu | null>(null);
-  const [clearGallery, setClearGallery] = useState(false);
+  const [galleryItems, setGalleryItems] = useState<
+    { id: string; url: string; file: File | null; removed: boolean }[]
+  >([]);
 
   // Form State
   const [name, setName] = useState('');
@@ -52,6 +54,21 @@ export default function ManageWaifu() {
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      if (editing) {
+        const files = Array.from(e.target.files);
+        const stamp = Date.now();
+        setGalleryItems((prev) => [
+          ...prev,
+          ...files.map((file, idx) => ({
+            id: `new-${stamp}-${idx}`,
+            url: '',
+            file,
+            removed: false,
+          })),
+        ]);
+        e.target.value = '';
+        return;
+      }
       setGalleryImages(e.target.files);
     }
   };
@@ -72,16 +89,25 @@ export default function ManageWaifu() {
         mainImageUrl = await uploadToCloudinary(mainImage);
       }
 
-      let galleryUrls = editing?.gallery ?? [];
-      if (galleryImages) {
+      let galleryUrls: string[] = [];
+      if (editing) {
+        const active = galleryItems.filter((i) => !i.removed);
+        const resolved = await Promise.all(
+          active.map(async (i) => {
+            if (i.file) return uploadToCloudinary(i.file);
+            return i.url;
+          })
+        );
+        galleryUrls = resolved.filter(Boolean);
+      } else {
         const uploaded: string[] = [];
-        for (let i = 0; i < galleryImages.length; i++) {
-          const url = await uploadToCloudinary(galleryImages[i]);
-          uploaded.push(url);
+        if (galleryImages) {
+          for (let i = 0; i < galleryImages.length; i++) {
+            const url = await uploadToCloudinary(galleryImages[i]);
+            uploaded.push(url);
+          }
         }
         galleryUrls = uploaded;
-      } else if (editing && clearGallery) {
-        galleryUrls = [];
       }
 
       if (editing) {
@@ -114,7 +140,7 @@ export default function ManageWaifu() {
       setMainImage(null);
       setGalleryImages(null);
       setEditing(null);
-      setClearGallery(false);
+      setGalleryItems([]);
       
       // Reset file inputs
       (document.getElementById('main-image') as HTMLInputElement).value = '';
@@ -137,7 +163,14 @@ export default function ManageWaifu() {
     setDescription(waifu.description);
     setMainImage(null);
     setGalleryImages(null);
-    setClearGallery(false);
+    setGalleryItems(
+      (waifu.gallery ?? []).map((url, idx) => ({
+        id: `existing-${idx}-${url}`,
+        url,
+        file: null,
+        removed: false,
+      }))
+    );
     setError('');
     (document.getElementById('main-image') as HTMLInputElement).value = '';
     (document.getElementById('gallery-images') as HTMLInputElement).value = '';
@@ -151,7 +184,7 @@ export default function ManageWaifu() {
     setDescription('');
     setMainImage(null);
     setGalleryImages(null);
-    setClearGallery(false);
+    setGalleryItems([]);
     setError('');
     (document.getElementById('main-image') as HTMLInputElement).value = '';
     (document.getElementById('gallery-images') as HTMLInputElement).value = '';
@@ -255,6 +288,25 @@ export default function ManageWaifu() {
               <label className="block text-sm font-medium text-gray-700">
                 Main Image {editing ? '(optional)' : ''}
               </label>
+              {editing && (
+                <div className="mt-2">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                    {(() => {
+                      const src = mainImage ? URL.createObjectURL(mainImage) : editing.imageUrl;
+                      return (
+                        <img
+                          src={src}
+                          alt={name}
+                          className="w-full h-full object-cover object-top"
+                          onLoad={() => {
+                            if (mainImage) URL.revokeObjectURL(src);
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
               <input
                 id="main-image"
                 type="file"
@@ -265,7 +317,7 @@ export default function ManageWaifu() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Gallery Images {editing ? '(optional - replaces existing)' : ''}
+                {editing ? 'Gallery Images (add / replace individually)' : 'Gallery Images'}
               </label>
               <input
                 id="gallery-images"
@@ -279,15 +331,83 @@ export default function ManageWaifu() {
           </div>
 
           {editing && (
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={clearGallery}
-                onChange={(e) => setClearGallery(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
-              />
-              Clear existing gallery
-            </label>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-700">Current Gallery</p>
+                <button
+                  type="button"
+                  onClick={() => setGalleryItems((prev) => prev.map((i) => ({ ...i, removed: true })))}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Remove all
+                </button>
+              </div>
+              {galleryItems.length === 0 ? (
+                <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
+                  No gallery images.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {galleryItems.map((item) => (
+                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="relative aspect-square bg-gray-50">
+                        {(() => {
+                          const src = item.file ? URL.createObjectURL(item.file) : item.url;
+                          return (
+                            <img
+                              src={src}
+                              alt={name}
+                              className={`absolute inset-0 w-full h-full object-cover ${item.removed ? 'opacity-30 grayscale' : ''}`}
+                              onLoad={() => {
+                                if (item.file) URL.revokeObjectURL(src);
+                              }}
+                            />
+                          );
+                        })()}
+                        {item.removed && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-xs font-semibold bg-white/90 px-2 py-1 rounded">
+                              Removed
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGalleryItems((prev) =>
+                              prev.map((i) => (i.id === item.id ? { ...i, removed: !i.removed } : i))
+                            )
+                          }
+                          className="text-xs font-medium text-gray-600 hover:text-gray-900"
+                        >
+                          {item.removed ? 'Undo' : 'Remove'}
+                        </button>
+                        <label className="text-xs font-medium text-pink-600 hover:text-pink-700 cursor-pointer">
+                          Replace
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setGalleryItems((prev) =>
+                                prev.map((i) =>
+                                  i.id === item.id ? { ...i, file, removed: false } : i
+                                )
+                              );
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
