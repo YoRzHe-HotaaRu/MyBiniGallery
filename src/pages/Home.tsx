@@ -8,9 +8,13 @@ import { Anime, Waifu } from '../types';
 
 export default function Home() {
   const heroWallpapers = [
-    'https://images.unsplash.com/photo-1519638399535-1b036603ac77?auto=format&fit=crop&w=2400&q=80',
-    'https://images.unsplash.com/photo-1640903581708-8d491706515b?auto=format&fit=crop&w=2400&q=80',
-    'https://images.unsplash.com/photo-1665042099439-39d93c1117e6?auto=format&fit=crop&w=2400&q=80',
+    '/banner/photo_2026-02-17_16-46-19.jpg',
+    '/banner/photo_2026-02-17_16-46-56.jpg',
+    '/banner/photo_2026-02-17_16-46-59.jpg',
+    '/banner/photo_2026-02-17_16-47-02.jpg',
+    '/banner/photo_2026-02-17_16-52-00.jpg',
+    '/banner/photo_2026-02-17_16-52-28.jpg',
+    '/banner/photo_2026-02-17_16-53-59.jpg',
   ];
 
   const [heroIndex, setHeroIndex] = useState(0);
