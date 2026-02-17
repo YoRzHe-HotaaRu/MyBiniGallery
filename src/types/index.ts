@@ -17,6 +17,16 @@ export interface Waifu {
   createdAt: number;
 }
 
+export interface WaifuComment {
+  id: string;
+  waifuId: string;
+  uid: string;
+  authorEmail: string;
+  authorName?: string;
+  text: string;
+  createdAt: number;
+}
+
 export interface User {
   uid: string;
   email: string;
