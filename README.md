@@ -20,17 +20,35 @@ You show up, browse waifus, save your favourites, and leave a comment when you f
 
 ## Screenshots
 
-### Home / Browsing
+Here’s what the app looks like when you’re actually using it.
+
+### 1) Homepage (the “start scrolling” vibe)
+
+Landing page with quick paths into browsing, plus the “recently added” stuff so you can instantly click something cool.
 
 ![Homepage](screenshots/homepage_screen.jpg)
 
+### 2) Anime list (pick a series first)
+
+Browse anime series. Tap one to jump into a filtered waifu gallery for that show.
+
 ![Anime list](screenshots/anime_page_screen.jpg)
+
+### 3) Waifu gallery (the main buffet)
+
+Grid view of waifus. This is where you do most of your browsing and open a waifu you want to see up close.
 
 ![Waifu gallery](screenshots/waifu_screen_page.jpg)
 
-### Detail / Comments
+### 4) Waifu detail (photos + info)
+
+Individual waifu page with the main image, details, gallery, and the social bits (likes/comments).
 
 ![Waifu detail](screenshots/waifu_detail_page.jpg)
+
+### 5) Comments (say something nice)
+
+Comment thread on a waifu page. You can post replies and see what other people said without exposing emails publicly.
 
 ![Comments](screenshots/gallery_comment_screen.jpg)
 
