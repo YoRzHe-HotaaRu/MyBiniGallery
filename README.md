@@ -22,35 +22,35 @@ You show up, browse waifus, save your favourites, and leave a comment when you f
 
 Here’s what the app looks like when you’re actually using it.
 
-### 1) Homepage (the “start scrolling” vibe)
+### 1) Sign up (one-time “let me in”)
 
-Landing page with quick paths into browsing, plus the “recently added” stuff so you can instantly click something cool.
+Create an account if you’re new here. After that, you’re in and you can start saving favourites and posting comments.
 
-![Homepage](screenshots/homepage_screen.jpg)
+![Sign up](screenshots/sign_up_screen.jpg)
 
-### 2) Anime list (pick a series first)
-
-Browse anime series. Tap one to jump into a filtered waifu gallery for that show.
-
-![Anime list](screenshots/anime_page_screen.jpg)
-
-### 3) Waifu gallery (the main buffet)
-
-Grid view of waifus. This is where you do most of your browsing and open a waifu you want to see up close.
-
-![Waifu gallery](screenshots/waifu_screen_page.jpg)
-
-### 4) Sign in (get your stuff synced)
+### 2) Sign in (get your stuff synced)
 
 Sign in to like, comment, and keep your favourites tied to your account (so they don’t disappear when you switch devices).
 
 ![Sign in](screenshots/sign_in_screen.jpg)
 
-### 5) Sign up (one-time “let me in”)
+### 3) Homepage (the “start scrolling” vibe)
 
-Create an account if you’re new here. After that, you’re in and you can start saving favourites and posting comments.
+Landing page with quick paths into browsing, plus the “recently added” stuff so you can instantly click something cool.
 
-![Sign up](screenshots/sign_up_screen.jpg)
+![Homepage](screenshots/homepage_screen.jpg)
+
+### 4) Anime list (pick a series first)
+
+Browse anime series. Tap one to jump into a filtered waifu gallery for that show.
+
+![Anime list](screenshots/anime_page_screen.jpg)
+
+### 5) Waifu gallery (the main buffet)
+
+Grid view of waifus. This is where you do most of your browsing and open a waifu you want to see up close.
+
+![Waifu gallery](screenshots/waifu_screen_page.jpg)
 
 ### 6) Waifu detail (photos + info)
 
