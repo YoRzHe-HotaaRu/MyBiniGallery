@@ -91,8 +91,22 @@ export default function Profile() {
         const [bestId, bestCount] = entries[0] ?? [];
         setTopCommentedWaifuId(bestId ?? null);
         setTopCommentedCount(typeof bestCount === 'number' ? bestCount : 0);
-      } catch {
-        setError('Could not load your stats right now.');
+      } catch (err: unknown) {
+        console.error('Profile stats error:', err);
+        const code = (err as { code?: unknown })?.code;
+        const message = (err as { message?: unknown })?.message;
+        const codeText = typeof code === 'string' ? code : '';
+        const messageText = typeof message === 'string' ? message : '';
+
+        if (codeText === 'failed-precondition' || messageText.toLowerCase().includes('index')) {
+          setError(
+            'Stats need a Firestore index. In Firebase console → Firestore Database → Indexes: add collection-group indexes for likes(uid) and comments(uid).'
+          );
+        } else if (codeText === 'permission-denied') {
+          setError('Stats are blocked by Firestore rules. Allow reads for waifus/*/likes and waifus/*/comments.');
+        } else {
+          setError(codeText ? `Could not load your stats right now. (${codeText})` : 'Could not load your stats right now.');
+        }
         setLikesGiven(0);
         setCommentsGiven(0);
         setTopCommentedWaifuId(null);
