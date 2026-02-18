@@ -37,3 +37,12 @@ export interface User {
   showcaseWaifuIds?: string[];
   updatedAt?: number;
 }
+
+export interface PublicUserProfile {
+  uid: string;
+  displayName?: string;
+  photoURL?: string;
+  createdAt: number;
+  showcaseWaifuIds?: string[];
+  updatedAt?: number;
+}

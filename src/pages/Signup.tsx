@@ -59,6 +59,13 @@ export default function Signup() {
         createdAt: Date.now(),
       });
 
+      await setDoc(doc(db, 'publicUsers', user.uid), {
+        uid: user.uid,
+        displayName: name,
+        photoURL: user.photoURL || '',
+        createdAt: Date.now(),
+      });
+
       setShowSuccess(true);
       setTimeout(() => {
         navigate(from);
@@ -102,6 +109,16 @@ export default function Signup() {
           { merge: true }
         );
       }
+
+      await setDoc(
+        doc(db, 'publicUsers', user.uid),
+        {
+          uid: user.uid,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+        },
+        { merge: true }
+      );
 
       setShowSuccess(true);
       setTimeout(() => {

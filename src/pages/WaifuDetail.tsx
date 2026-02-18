@@ -321,9 +321,20 @@ export default function WaifuDetail() {
                     <Card key={c.id} className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <div className="text-sm font-extrabold text-gray-900">
+                          <Link
+                            to={`/user/${c.uid}`}
+                            className="group relative inline-flex items-center gap-2 text-sm font-extrabold text-gray-900 hover:text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded-md"
+                          >
                             {c.authorName?.trim() || 'Anonymous'}
-                          </div>
+                            <span className="pointer-events-none absolute left-0 top-full mt-2 hidden w-64 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-[0_18px_45px_-30px_rgba(236,72,153,0.35)] group-hover:block">
+                              <span className="block text-xs font-semibold text-gray-600">
+                                View profile
+                              </span>
+                              <span className="mt-1 block text-xs text-gray-500">
+                                Check their stats + top 3 showcase.
+                              </span>
+                            </span>
+                          </Link>
                           <div className="text-xs text-gray-500">{new Date(c.createdAt).toLocaleString()}</div>
                         </div>
                         {canDelete ? (

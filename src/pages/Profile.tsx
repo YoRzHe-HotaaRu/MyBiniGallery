@@ -1,22 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { collectionGroup, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
-import { updateProfile } from 'firebase/auth';
+import { Link, useNavigate } from 'react-router-dom';
+import { collection, collectionGroup, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { deleteUser, updateProfile } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { useAuthStore } from '../store/authStore';
 import { useFavouritesStore } from '../store/favouritesStore';
 import { Waifu } from '../types';
 import { Calendar, Heart, MessageSquare, ThumbsUp, User as UserIcon } from 'lucide-react';
-import { Button, Card, EmptyState, Input, PageHeader, Select, Skeleton } from '../components/ui';
+import { Button, Card, ConfirmDialog, EmptyState, Input, PageHeader, Select, Skeleton } from '../components/ui';
 
 function normalizeShowcaseSlots(ids: string[] | undefined) {
   const safe = Array.isArray(ids) ? ids.filter((v) => typeof v === 'string') : [];
   return [safe[0] ?? '', safe[1] ?? '', safe[2] ?? ''];
 }
 
+function chunk<T>(items: T[], size: number) {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
 export default function Profile() {
   const { user, setUser } = useAuthStore();
   const { ids: favouriteIdsMap } = useFavouritesStore();
+  const navigate = useNavigate();
 
   const favouriteIds = useMemo(() => Object.keys(favouriteIdsMap), [favouriteIdsMap]);
 
@@ -37,6 +44,9 @@ export default function Profile() {
   const [showcaseSlots, setShowcaseSlots] = useState<string[]>(['', '', '']);
   const [savedShowcaseSlots, setSavedShowcaseSlots] = useState<string[]>(['', '', '']);
   const [savingShowcase, setSavingShowcase] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const [favouriteWaifus, setFavouriteWaifus] = useState<Waifu[]>([]);
 
@@ -260,6 +270,11 @@ export default function Profile() {
                             { displayName: name, updatedAt: Date.now() },
                             { merge: true }
                           );
+                          await setDoc(
+                            doc(db, 'publicUsers', user.uid),
+                            { uid: user.uid, displayName: name, photoURL: user.photoURL || '', createdAt: user.createdAt, updatedAt: Date.now() },
+                            { merge: true }
+                          );
                           setUser({ ...user, displayName: name });
                         } catch {
                           setError('Could not update your username right now.');
@@ -342,6 +357,23 @@ export default function Profile() {
               )}
             </div>
           </Card>
+
+          <Card className="p-6 border border-red-200">
+            <div className="text-lg font-extrabold text-gray-900">Danger zone</div>
+            <div className="mt-2 text-sm text-gray-600">
+              Deleting your account will remove your profile, likes, comments, and favourites. This can’t be undone.
+            </div>
+            {deleteError ? (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                {deleteError}
+              </div>
+            ) : null}
+            <div className="mt-5">
+              <Button type="button" variant="danger" className="h-11" onClick={() => setDeleteOpen(true)} disabled={deleteBusy}>
+                Delete account
+              </Button>
+            </div>
+          </Card>
         </div>
 
         <div className="space-y-6 lg:col-span-2">
@@ -366,6 +398,11 @@ export default function Profile() {
                       { showcaseWaifuIds: next, updatedAt: Date.now() },
                       { merge: true }
                     );
+                      await setDoc(
+                        doc(db, 'publicUsers', user.uid),
+                        { uid: user.uid, showcaseWaifuIds: next, updatedAt: Date.now() },
+                        { merge: true }
+                      );
                     setShowcaseSlots(normalized);
                     setSavedShowcaseSlots(normalized);
                     setUser({ ...user, showcaseWaifuIds: next });
@@ -463,6 +500,65 @@ export default function Profile() {
           </Card>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Delete your account?"
+        description="This removes your profile, favourites, likes, and comments. No take-backs."
+        confirmText={deleteBusy ? 'Deleting…' : 'Delete account'}
+        cancelText="Cancel"
+        danger
+        onClose={() => {
+          if (deleteBusy) return;
+          setDeleteOpen(false);
+        }}
+        onConfirm={async () => {
+          if (!user) return;
+          const current = auth.currentUser;
+          if (!current) return;
+          setDeleteBusy(true);
+          setDeleteError('');
+          try {
+            const uid = user.uid;
+
+            const favSnap = await getDocs(collection(db, 'users', uid, 'favourites'));
+            const favRefs = favSnap.docs.map((d) => d.ref);
+            for (const group of chunk(favRefs, 25)) await Promise.all(group.map((r) => deleteDoc(r)));
+
+            const likesSnap = await getDocs(query(collectionGroup(db, 'likes'), where('uid', '==', uid)));
+            const likeRefs = likesSnap.docs.map((d) => d.ref);
+            for (const group of chunk(likeRefs, 25)) await Promise.all(group.map((r) => deleteDoc(r)));
+
+            const commentsSnap = await getDocs(query(collectionGroup(db, 'comments'), where('uid', '==', uid)));
+            const commentRefs = commentsSnap.docs.map((d) => d.ref);
+            for (const group of chunk(commentRefs, 25)) await Promise.all(group.map((r) => deleteDoc(r)));
+
+            await deleteDoc(doc(db, 'publicUsers', uid));
+            await deleteDoc(doc(db, 'users', uid));
+
+            await deleteUser(current);
+            setUser(null);
+            navigate('/', { replace: true });
+          } catch (err: unknown) {
+            console.error('Delete account error:', err);
+            const code = (err as { code?: unknown })?.code;
+            const message = (err as { message?: unknown })?.message;
+            const codeText = typeof code === 'string' ? code : '';
+            const messageText = typeof message === 'string' ? message : '';
+            if (codeText === 'auth/requires-recent-login') {
+              setDeleteError('For security reasons, please sign in again, then try deleting your account.');
+            } else if (codeText === 'permission-denied') {
+              setDeleteError(
+                'Firestore blocked the delete. Publish the latest firestore.rules (users/publicUsers delete enabled) and try again.'
+              );
+            } else {
+              setDeleteError(messageText || 'Could not delete your account right now.');
+            }
+          } finally {
+            setDeleteBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }

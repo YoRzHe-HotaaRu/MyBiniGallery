@@ -10,16 +10,35 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    match /{path=**}/likes/{likeUid} {
+      allow read: if true;
+      allow create, delete: if false;
+      allow update: if false;
+    }
+
+    match /{path=**}/comments/{commentId} {
+      allow read: if true;
+      allow create, delete: if false;
+      allow update: if false;
+    }
+
     match /users/{uid} {
       allow read: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn() && request.auth.uid == uid;
       allow update: if isSignedIn() && request.auth.uid == uid;
-      allow delete: if false;
+      allow delete: if isSignedIn() && request.auth.uid == uid;
 
       match /favourites/{waifuId} {
         allow read, create, delete: if isSignedIn() && request.auth.uid == uid;
         allow update: if false;
       }
+    }
+
+    match /publicUsers/{uid} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSignedIn() && request.auth.uid == uid;
     }
 
     match /anime/{animeId} {

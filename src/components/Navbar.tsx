@@ -38,12 +38,12 @@ export default function Navbar() {
     setMobileOpen(false);
     setShowLogout(true);
     try {
+      navigate('/', { replace: true });
       await signOut(auth);
-      navigate('/login', { replace: true });
     } catch (error) {
       console.error('Error logging out:', error);
     } finally {
-      window.setTimeout(() => setShowLogout(false), 900);
+      window.setTimeout(() => setShowLogout(false), 1200);
     }
   };
 
