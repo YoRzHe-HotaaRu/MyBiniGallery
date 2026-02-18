@@ -7,6 +7,7 @@ import AnimeList from './pages/AnimeList';
 import WaifuList from './pages/WaifuList';
 import WaifuDetail from './pages/WaifuDetail';
 import Favourites from './pages/Favourites';
+import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -26,6 +27,14 @@ export default function AppRoutes() {
           element={
             <AuthGuard>
               <Favourites />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <AuthGuard>
+              <Profile />
             </AuthGuard>
           }
         />

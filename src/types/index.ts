@@ -34,4 +34,6 @@ export interface User {
   photoURL?: string;
   role: 'admin' | 'user';
   createdAt: number;
+  showcaseWaifuIds?: string[];
+  updatedAt?: number;
 }

@@ -175,6 +175,15 @@ export default function Navbar() {
                       </div>
                       <div className="p-2">
                         <Link
+                          to="/profile"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-gray-50"
+                          onClick={() => setUserMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <UserIcon className="h-4 w-4 text-gray-600" />
+                          Profile
+                        </Link>
+                        <Link
                           to="/favourites"
                           className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-gray-50"
                           onClick={() => setUserMenuOpen(false)}
@@ -286,14 +295,24 @@ export default function Navbar() {
                       </Link>
                     </>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-gray-900 hover:bg-gray-50"
-                    >
-                      <LogOut className="h-4 w-4 text-gray-600" />
-                      Sign out
-                    </button>
+                    <>
+                      <Link
+                        to="/profile"
+                        className="flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-gray-900 hover:bg-gray-50"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <UserIcon className="h-4 w-4 text-gray-600" />
+                        Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-gray-900 hover:bg-gray-50"
+                      >
+                        <LogOut className="h-4 w-4 text-gray-600" />
+                        Sign out
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
