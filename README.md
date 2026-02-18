@@ -1,6 +1,22 @@
 # MyBiniGalLery
 
-My Bini is a modern anime + waifu gallery web app where you can browse series, explore character profiles, save favourites, and join the conversation with likes and comments. It’s built with React + TypeScript + Vite, powered by Firebase (Auth + Firestore + Analytics) and Cloudinary for fast image uploads. An admin area is included for managing anime series and waifu entries.
+My Bini is a chill little gallery for anime series + waifus.
+
+You show up, browse waifus, save your favourites, and leave a comment when you find the one that lives rent-free in your head. No complicated stuff, just a clean gallery you can scroll for fun.
+
+## What you can do here
+
+- Browse anime series, then jump into their waifu collections
+- Open a waifu page with images + details
+- Save favourites so you can come back later
+- Drop likes and comments (without showing your email in public)
+
+## Quick tour (so you don’t get lost)
+
+- Want to browse by series? Head to **Anime**
+- Want the full buffet? Go to **Waifus**
+- Found a waifu you like? Hit the **heart** to favourite
+- Want to join the chat? Open a waifu and post a comment
 
 ## Screenshots
 
@@ -18,28 +34,27 @@ My Bini is a modern anime + waifu gallery web app where you can browse series, e
 
 ![Comments](screenshots/gallery_comment_screen.jpg)
 
-## Features
+## Admin corner (for whoever runs the collection)
 
-- Browse anime series
-- Browse waifu cards and open waifu detail pages
-- Favourites, likes, and comments
-- Authentication (Email/Password + Google)
-- Admin-only routes for managing anime and waifus
-- Cloudinary-backed image uploads (cover + waifu images + gallery)
-- Page transitions and UI motion with Framer Motion
+- There’s an admin area to create/edit anime and waifus
+- You can upload cover images + waifu images + galleries
+- Admin access is role-based (so random users don’t get the keys)
 
-## Tech Stack
+---
 
-- React 18 + TypeScript
-- Vite 6
-- React Router
+<details>
+<summary><strong>Developer setup (click to expand)</strong></summary>
+
+## Tech stack
+
+- React + TypeScript + Vite
 - Tailwind CSS
 - Firebase (Auth, Firestore, Analytics)
-- Cloudinary uploads (unsigned preset)
-- Zustand state management
-- Framer Motion animations
+- Cloudinary (image uploads)
+- Zustand (state)
+- Framer Motion (animations)
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
@@ -49,7 +64,7 @@ My Bini is a modern anime + waifu gallery web app where you can browse series, e
 
 ### Install
 
-Using pnpm (recommended because this repo includes a pnpm lockfile):
+Using pnpm:
 
 ```bash
 pnpm install
@@ -61,9 +76,9 @@ Or npm:
 npm install
 ```
 
-### Environment Variables
+### Environment variables
 
-Create a `.env` file at the project root (it’s ignored by git in this repo) and set:
+Create a `.env` file at the project root and set:
 
 ```bash
 VITE_FIREBASE_API_KEY=...
@@ -99,12 +114,12 @@ Open the URL shown in the terminal (typically `http://localhost:5173`).
 - `pnpm lint` — run ESLint
 - `pnpm check` — typecheck only
 
-## Firebase Setup Notes
+## Firebase setup notes
 
 ### Authentication
 
-- Enable Email/Password sign-in.
-- Enable Google sign-in.
+- Enable Email/Password sign-in
+- Enable Google sign-in
 
 ### Firestore collections used
 
@@ -121,19 +136,21 @@ The user role is read from Firestore and defaults to `user` if missing:
 
 In Firestore, set `users/{uid}.role` to `admin`. Admin routes live under `/admin` (see [AppRoutes.tsx](file:///g:/DEVELOPMENT-TRAE/MyBiniGal/src/AppRoutes.tsx)).
 
-## Cloudinary Notes
+## Cloudinary notes
 
 This app uploads directly from the browser using an unsigned upload preset. Treat the preset as a public capability and configure Cloudinary restrictions appropriately (allowed formats, max size, folder, etc.).
 
-## Project Structure
+## Project structure
 
 ```
 src/
   components/   shared UI + layouts + guards
   config/       firebase setup
-  hooks/        reusable hooks (theme)
+  hooks/        reusable hooks
   lib/          helpers (cloudinary, utils)
   pages/        routes (public + admin)
-  store/        zustand stores (auth)
+  store/        zustand stores
   types/        shared TypeScript types
 ```
+
+</details>
