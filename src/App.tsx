@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './config/firebase';
 import { useAuthStore } from './store/authStore';
 import AppRoutes from './AppRoutes';
@@ -35,6 +35,18 @@ function App() {
             displayName,
             photoURL,
           });
+
+          await setDoc(
+            doc(db, 'publicUsers', firebaseUser.uid),
+            {
+              uid: firebaseUser.uid,
+              displayName: displayName || '',
+              photoURL: photoURL || '',
+              createdAt,
+              updatedAt: Date.now(),
+            },
+            { merge: true }
+          );
         } else {
           setUser(null);
         }

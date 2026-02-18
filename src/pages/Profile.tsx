@@ -68,6 +68,18 @@ export default function Profile() {
         if (name.trim()) setDisplayName(name.trim());
         setShowcaseSlots(slots);
         setSavedShowcaseSlots(slots);
+        await setDoc(
+          doc(db, 'publicUsers', user.uid),
+          {
+            uid: user.uid,
+            displayName: (name.trim() || user.displayName?.trim() || ''),
+            photoURL: user.photoURL || '',
+            createdAt: user.createdAt,
+            showcaseWaifuIds: slots.filter(Boolean),
+            updatedAt: Date.now(),
+          },
+          { merge: true }
+        );
       } catch {
         setError('Could not load your profile details.');
       } finally {

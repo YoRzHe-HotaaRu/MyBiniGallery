@@ -87,6 +87,10 @@ export default function Signup() {
       // Check if user document exists
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
+      const existingCreatedAt =
+        userDoc.exists() && typeof (userDoc.data() as { createdAt?: unknown }).createdAt === 'number'
+          ? ((userDoc.data() as { createdAt?: number }).createdAt as number)
+          : null;
 
       if (!userDoc.exists()) {
         // Create user document if it doesn't exist
@@ -116,6 +120,8 @@ export default function Signup() {
           uid: user.uid,
           displayName: user.displayName || '',
           photoURL: user.photoURL || '',
+          createdAt: existingCreatedAt ?? Date.now(),
+          updatedAt: Date.now(),
         },
         { merge: true }
       );

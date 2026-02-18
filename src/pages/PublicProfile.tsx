@@ -149,7 +149,8 @@ export default function PublicProfile() {
   }, [profile, showcaseIds]);
 
   const titleName = profile?.displayName?.trim() || 'User';
-  const createdAtLabel = profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '—';
+  const createdAtLabel =
+    typeof profile?.createdAt === 'number' ? new Date(profile.createdAt).toLocaleDateString() : '—';
   const initials = (titleName[0] || 'U').toUpperCase();
 
   return (
@@ -346,4 +347,3 @@ export default function PublicProfile() {
     </div>
   );
 }
-
