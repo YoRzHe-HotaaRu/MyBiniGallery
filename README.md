@@ -40,13 +40,25 @@ Grid view of waifus. This is where you do most of your browsing and open a waifu
 
 ![Waifu gallery](screenshots/waifu_screen_page.jpg)
 
-### 4) Waifu detail (photos + info)
+### 4) Sign in (get your stuff synced)
+
+Sign in to like, comment, and keep your favourites tied to your account (so they don’t disappear when you switch devices).
+
+![Sign in](screenshots/sign_in_screen.jpg)
+
+### 5) Sign up (one-time “let me in”)
+
+Create an account if you’re new here. After that, you’re in and you can start saving favourites and posting comments.
+
+![Sign up](screenshots/sign_up_screen.jpg)
+
+### 6) Waifu detail (photos + info)
 
 Individual waifu page with the main image, details, gallery, and the social bits (likes/comments).
 
 ![Waifu detail](screenshots/waifu_detail_page.jpg)
 
-### 5) Comments (say something nice)
+### 7) Comments (say something nice)
 
 Comment thread on a waifu page. You can post replies and see what other people said without exposing emails publicly.
 
