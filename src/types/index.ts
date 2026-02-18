@@ -21,7 +21,7 @@ export interface WaifuComment {
   id: string;
   waifuId: string;
   uid: string;
-  authorEmail: string;
+  authorEmail?: string;
   authorName?: string;
   text: string;
   createdAt: number;

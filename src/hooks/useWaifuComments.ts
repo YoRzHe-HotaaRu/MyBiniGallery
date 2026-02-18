@@ -5,8 +5,7 @@ import { WaifuComment } from '../types';
 
 interface AddCommentInput {
   uid: string;
-  authorEmail: string;
-  authorName?: string;
+  authorName: string;
   text: string;
 }
 
@@ -60,8 +59,7 @@ export function useWaifuComments(waifuId: string | undefined): UseWaifuCommentsR
       const commentsRef = collection(db, 'waifus', waifuId, 'comments');
       await addDoc(commentsRef, {
         uid: input.uid,
-        authorEmail: input.authorEmail,
-        authorName: input.authorName ?? '',
+        authorName: input.authorName,
         text,
         createdAt: Date.now(),
       });
@@ -79,4 +77,3 @@ export function useWaifuComments(waifuId: string | undefined): UseWaifuCommentsR
 
   return useMemo(() => ({ comments, loading, addComment, deleteComment }), [comments, loading, addComment, deleteComment]);
 }
-

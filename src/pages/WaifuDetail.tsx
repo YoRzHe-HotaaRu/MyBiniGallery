@@ -262,8 +262,7 @@ export default function WaifuDetail() {
                   try {
                     await addComment({
                       uid: user.uid,
-                      authorEmail: user.email,
-                      authorName: user.displayName,
+                      authorName: user.displayName?.trim() || 'User',
                       text: commentText,
                     });
                     setCommentText('');
@@ -323,7 +322,7 @@ export default function WaifuDetail() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="text-sm font-extrabold text-gray-900">
-                            {c.authorName?.trim() || c.authorEmail}
+                            {c.authorName?.trim() || 'Anonymous'}
                           </div>
                           <div className="text-xs text-gray-500">{new Date(c.createdAt).toLocaleString()}</div>
                         </div>

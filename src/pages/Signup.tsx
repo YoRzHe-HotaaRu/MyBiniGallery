@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../config/firebase';
-import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AuthSuccessAnimation from '../components/AuthSuccessAnimation';
 import AuthShell from '../components/AuthShell';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,6 +33,11 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const name = displayName.trim();
+    if (name.length < 2) {
+      setError('Username must be at least 2 characters');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -43,10 +49,12 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create user document in Firestore
+      await updateProfile(user, { displayName: name });
+
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         email: user.email,
+        displayName: name,
         role: 'user', // Default role
         createdAt: Date.now(),
       });
@@ -145,6 +153,28 @@ export default function Signup() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 placeholder="you@example.com"
+                disabled={busy}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="display-name" className="block text-sm font-semibold text-gray-700">
+              Username
+            </label>
+            <div className="mt-2 relative">
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                id="display-name"
+                name="display-name"
+                type="text"
+                autoComplete="nickname"
+                required
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder="Your display name"
+                maxLength={32}
                 disabled={busy}
               />
             </div>
