@@ -3,7 +3,9 @@ import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc 
 import { db } from '../../config/firebase';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { Anime } from '../../types';
-import { Plus, Trash2, Loader, Pencil, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Skeleton, Textarea } from '../../components/ui';
 
 export default function ManageAnime() {
   const [animes, setAnimes] = useState<Anime[]>([]);
@@ -14,6 +16,7 @@ export default function ManageAnime() {
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<Anime | null>(null);
+  const [animeToDelete, setAnimeToDelete] = useState<Anime | null>(null);
 
   useEffect(() => {
     fetchAnimes();
@@ -111,64 +114,53 @@ export default function ManageAnime() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this anime?')) {
-      try {
-        await deleteDoc(doc(db, 'anime', id));
-        setAnimes(animes.filter((anime) => anime.id !== id));
-      } catch (err) {
-        console.error('Error deleting anime:', err);
-      }
-    }
+    const target = animes.find((a) => a.id === id) ?? null;
+    setAnimeToDelete(target);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader className="animate-spin h-8 w-8 text-pink-500" />
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage Anime Series</h1>
+    <div className="space-y-8">
+      <PageHeader
+        title="Manage Anime"
+        subtitle="Create and maintain the anime catalog."
+        actions={
+          <Link
+            to="/admin"
+            className="h-11 px-4 rounded-xl font-semibold text-gray-800 hover:bg-white/70 transition border border-white/60 bg-white/60 backdrop-blur shadow-sm inline-flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Dashboard
+          </Link>
+        }
+      />
 
       {/* Add / Edit Anime Form */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">
-            {editing ? 'Edit Anime' : 'Add New Anime'}
-          </h2>
-          {editing && (
-            <button
-              type="button"
-              onClick={cancelEdit}
-              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Cancel
-            </button>
-          )}
-        </div>
+      <Card className="p-6 sm:p-8">
+        <CardHeader
+          title={editing ? 'Edit Anime' : 'Add New Anime'}
+          subtitle="Cover image is required for new series."
+          actions={
+            editing ? (
+              <Button type="button" variant="ghost" onClick={cancelEdit} className="h-10">
+                <X className="h-4 w-4" />
+                Cancel
+              </Button>
+            ) : null
+          }
+        />
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-              placeholder="e.g. Naruto"
-            />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Naruto" className="mt-1" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-              placeholder="Brief description..."
+              placeholder="Brief description…"
+              className="mt-1"
             />
           </div>
           <div>
@@ -186,14 +178,13 @@ export default function ManageAnime() {
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <button
+          <Button
             type="submit"
             disabled={uploading}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50"
           >
             {uploading ? (
               <>
-                <Loader className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
                 Saving...
               </>
             ) : (
@@ -206,54 +197,89 @@ export default function ManageAnime() {
                 {editing ? 'Save Changes' : 'Add Anime'}
               </>
             )}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
 
       {/* Anime List */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Existing Anime</h2>
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="text-lg font-extrabold text-gray-900">Existing Anime</div>
+          <div className="text-sm text-gray-600">Click edit to update details.</div>
         </div>
-        <ul className="divide-y divide-gray-200">
-          {animes.map((anime) => (
-            <li key={anime.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center space-x-4">
-                <img
-                  src={anime.coverImage}
-                  alt={anime.title}
-                  className="h-16 w-16 object-cover rounded-md"
-                />
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">{anime.title}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-1">{anime.description}</p>
+        {loading ? (
+          <div className="p-6 space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                  <Skeleton className="h-16 w-16 rounded-xl" />
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-72" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-9 w-9 rounded-xl" />
+                  <Skeleton className="h-9 w-9 rounded-xl" />
                 </div>
               </div>
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  onClick={() => startEdit(anime)}
-                  className="text-gray-500 hover:text-pink-600 p-2"
-                  title="Edit"
-                >
-                  <Pencil className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(anime.id)}
-                  className="text-red-600 hover:text-red-900 p-2"
-                  title="Delete"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </div>
-            </li>
-          ))}
-          {animes.length === 0 && (
-            <li className="p-6 text-center text-gray-500">No anime series found. Add one above!</li>
-          )}
-        </ul>
-      </div>
+            ))}
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {animes.map((anime) => (
+              <li key={anime.id} className="p-6 flex items-center justify-between gap-4 hover:bg-gray-50/70">
+                <div className="flex items-center gap-4 min-w-0">
+                  <img src={anime.coverImage} alt={anime.title} className="h-16 w-16 object-cover rounded-xl" />
+                  <div className="min-w-0">
+                    <div className="text-base font-extrabold text-gray-900 truncate">{anime.title}</div>
+                    <div className="text-sm text-gray-600 line-clamp-1">{anime.description}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(anime)}
+                    className="h-9 w-9 rounded-xl inline-flex items-center justify-center text-gray-700 hover:bg-white transition border border-transparent hover:border-gray-200"
+                    title="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(anime.id)}
+                    className="h-9 w-9 rounded-xl inline-flex items-center justify-center text-gray-700 hover:bg-red-50 hover:text-red-700 transition"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+            {animes.length === 0 ? (
+              <li className="p-6 text-center text-gray-600">No anime series found. Add one above!</li>
+            ) : null}
+          </ul>
+        )}
+      </Card>
+
+      <ConfirmDialog
+        open={Boolean(animeToDelete)}
+        title="Delete anime?"
+        description="This will remove the series. Waifus referencing it may become orphaned."
+        confirmText="Delete"
+        danger
+        onClose={() => setAnimeToDelete(null)}
+        onConfirm={async () => {
+          if (!animeToDelete) return;
+          try {
+            await deleteDoc(doc(db, 'anime', animeToDelete.id));
+            setAnimes((prev) => prev.filter((a) => a.id !== animeToDelete.id));
+          } catch (err) {
+            console.error('Error deleting anime:', err);
+          }
+        }}
+      />
     </div>
   );
 }

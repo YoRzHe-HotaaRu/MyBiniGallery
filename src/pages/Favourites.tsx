@@ -5,7 +5,8 @@ import { db } from '../config/firebase';
 import { Waifu } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { useFavouritesStore } from '../store/favouritesStore';
-import { Loader, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import { Card, EmptyState, PageHeader, Skeleton } from '../components/ui';
 
 export default function Favourites() {
   const { user } = useAuthStore();
@@ -40,70 +41,83 @@ export default function Favourites() {
 
   const loading = loadingIds || loadingWaifus;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader className="animate-spin h-8 w-8 text-pink-500" />
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Favourites</h1>
-        <Link to="/waifus" className="text-pink-600 hover:text-pink-700 font-medium">
-          Browse waifus
-        </Link>
-      </div>
-
-      {waifus.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-lg">No favourites yet.</p>
-          <Link to="/waifus" className="text-pink-600 hover:underline mt-2 inline-block">
-            Go to Waifu Gallery
+    <div className="space-y-8">
+      <PageHeader
+        title="Favourites"
+        subtitle="Your saved waifus, ready to revisit anytime."
+        actions={
+          <Link
+            to="/waifus"
+            className="h-11 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 inline-flex items-center justify-center"
+          >
+            Browse waifus
           </Link>
+        }
+      />
+
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="aspect-[3/4] w-full rounded-none" />
+              <div className="p-4">
+                <Skeleton className="h-5 w-3/4" />
+              </div>
+            </Card>
+          ))}
         </div>
+      ) : waifus.length === 0 ? (
+        <EmptyState
+          title="No favourites yet"
+          description="Tap the heart on a waifu to save them here."
+          action={
+            <Link
+              to="/waifus"
+              className="h-11 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 inline-flex items-center justify-center"
+            >
+              Go to gallery
+            </Link>
+          }
+        />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {waifus.map((waifu) => (
-            <Link
-              key={waifu.id}
-              to={`/waifu/${waifu.id}`}
-              className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="aspect-[3/4] relative overflow-hidden">
-                <img
-                  src={waifu.imageUrl}
-                  alt={waifu.name}
-                  className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!user) return;
-                    toggleFavourite(user.uid, waifu.id);
-                  }}
-                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-                  aria-label="Toggle favourite"
-                >
-                  <Heart
-                    className={`h-5 w-5 ${
-                      isFavourite(waifu.id) ? 'text-pink-600 fill-pink-600' : 'text-gray-500'
-                    }`}
+            <Link key={waifu.id} to={`/waifu/${waifu.id}`} className="group block">
+              <Card className="overflow-hidden transition-shadow hover:shadow-[0_25px_60px_-35px_rgba(236,72,153,0.40)]">
+                <div className="aspect-[3/4] relative overflow-hidden">
+                  <img
+                    src={waifu.imageUrl}
+                    alt={waifu.name}
+                    className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
                   />
-                </button>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-pink-600 transition-colors truncate">
-                  {waifu.name}
-                </h3>
-              </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-85 group-hover:opacity-100 transition-opacity duration-300" />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!user) return;
+                      toggleFavourite(user.uid, waifu.id);
+                    }}
+                    className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-white/85 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                    aria-label="Toggle favourite"
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${
+                        isFavourite(waifu.id) ? 'text-pink-600 fill-pink-600' : 'text-gray-600'
+                      }`}
+                    />
+                  </button>
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <div className="text-white font-extrabold leading-tight truncate">
+                      {waifu.name}
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </Link>
           ))}
         </div>

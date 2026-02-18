@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Anime, Waifu } from '../types';
+import { Card } from '../components/ui';
 
 export default function Home() {
   const heroWallpapers = [
@@ -89,7 +90,7 @@ export default function Home() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl mx-4">
+      <section className="relative overflow-hidden rounded-3xl">
         <div className="absolute inset-0">
           <AnimatePresence initial={false}>
             <motion.div
@@ -136,7 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section>
         <div className="flex items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 text-white flex items-center justify-center shadow-sm">
@@ -155,13 +156,13 @@ export default function Home() {
         {loadingRecent ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
+              <Card key={i} className="overflow-hidden">
                 <div className="aspect-[3/4] bg-gray-100" />
                 <div className="p-3 space-y-2">
                   <div className="h-4 bg-gray-100 rounded w-3/4" />
                   <div className="h-3 bg-gray-100 rounded w-1/2" />
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         ) : (
@@ -194,16 +195,16 @@ export default function Home() {
             ))}
 
             {recentWaifus.length === 0 && (
-              <div className="col-span-full text-center py-10 bg-gray-50 rounded-xl">
+              <Card className="col-span-full text-center py-10">
                 <p className="text-gray-500">No waifus yet. Add some from the admin panel.</p>
-              </div>
+              </Card>
             )}
           </div>
         )}
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section>
         <h2 className="text-3xl font-bold text-center mb-12">Why My Bini?</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
@@ -213,7 +214,7 @@ export default function Home() {
           ].map((feature, index) => (
             <motion.div 
               key={index}
-              className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+              className="text-center p-6 bg-white/80 backdrop-blur rounded-2xl border border-white/60 shadow-[0_20px_55px_-35px_rgba(236,72,153,0.25)] hover:shadow-[0_25px_60px_-35px_rgba(236,72,153,0.35)] transition-shadow"
               whileHover={{ y: -10 }}
             >
               <div

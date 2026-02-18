@@ -3,7 +3,9 @@ import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc 
 import { db } from '../../config/firebase';
 import { uploadToCloudinary } from '../../lib/cloudinary';
 import { Anime, Waifu } from '../../types';
-import { Plus, Trash2, Loader, Image as ImageIcon, Pencil, X } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Select, Skeleton, Textarea } from '../../components/ui';
 
 export default function ManageWaifu() {
   const [waifus, setWaifus] = useState<Waifu[]>([]);
@@ -12,6 +14,7 @@ export default function ManageWaifu() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<Waifu | null>(null);
+  const [waifuToDelete, setWaifuToDelete] = useState<Waifu | null>(null);
   const [galleryItems, setGalleryItems] = useState<
     { id: string; url: string; file: File | null; removed: boolean }[]
   >([]);
@@ -191,14 +194,8 @@ export default function ManageWaifu() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this waifu?')) {
-      try {
-        await deleteDoc(doc(db, 'waifus', id));
-        setWaifus(waifus.filter(w => w.id !== id));
-      } catch (err) {
-        console.error('Error deleting waifu:', err);
-      }
-    }
+    const target = waifus.find((w) => w.id === id) ?? null;
+    setWaifuToDelete(target);
   };
 
   const getAnimeName = (id: string) => {
@@ -207,80 +204,107 @@ export default function ManageWaifu() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader className="animate-spin h-8 w-8 text-pink-500" />
+      <div className="space-y-8">
+        <PageHeader
+          title="Manage Waifus"
+          subtitle="Create and maintain waifus and their galleries."
+          actions={
+            <Link
+              to="/admin"
+              className="h-11 px-4 rounded-xl font-semibold text-gray-800 hover:bg-white/70 transition border border-white/60 bg-white/60 backdrop-blur shadow-sm inline-flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Dashboard
+            </Link>
+          }
+        />
+        <Card className="p-6 sm:p-8 space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-11 w-36" />
+        </Card>
+        <Card className="p-6 space-y-4">
+          <Skeleton className="h-6 w-56" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <Skeleton className="h-16 w-16 rounded-2xl" />
+                <div className="space-y-2 min-w-0">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-40" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-9 rounded-xl" />
+                <Skeleton className="h-9 w-9 rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">Manage Waifus</h1>
+    <div className="space-y-8">
+      <PageHeader
+        title="Manage Waifus"
+        subtitle="Create and maintain waifus and their galleries."
+        actions={
+          <Link
+            to="/admin"
+            className="h-11 px-4 rounded-xl font-semibold text-gray-800 hover:bg-white/70 transition border border-white/60 bg-white/60 backdrop-blur shadow-sm inline-flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Dashboard
+          </Link>
+        }
+      />
 
       {/* Add / Edit Waifu Form */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">
-            {editing ? 'Edit Waifu' : 'Add New Waifu'}
-          </h2>
-          {editing && (
-            <button
-              type="button"
-              onClick={cancelEdit}
-              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Cancel
-            </button>
-          )}
-        </div>
+      <Card className="p-6 sm:p-8">
+        <CardHeader
+          title={editing ? 'Edit Waifu' : 'Add New Waifu'}
+          subtitle="Main image is required for new waifus."
+          actions={
+            editing ? (
+              <Button type="button" variant="ghost" onClick={cancelEdit} className="h-10">
+                <X className="h-4 w-4" />
+                Cancel
+              </Button>
+            ) : null
+          }
+        />
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-                placeholder="Character Name"
-              />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Character name" className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Anime Series</label>
-              <select
-                value={animeId}
-                onChange={(e) => setAnimeId(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-              >
+              <Select value={animeId} onChange={(e) => setAnimeId(e.target.value)} className="mt-1">
                 <option value="">Select Anime</option>
                 {animes.map(anime => (
                   <option key={anime.id} value={anime.id}>{anime.title}</option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700">Age (Optional)</label>
-            <input
-              type="text"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-              placeholder="e.g. 17"
-            />
+            <Input value={age} onChange={(e) => setAge(e.target.value)} placeholder="e.g. 17" className="mt-1" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500 border p-2"
-              placeholder="Character bio..."
-            />
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Character bio…" className="mt-1" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,13 +367,13 @@ export default function ManageWaifu() {
                 </button>
               </div>
               {galleryItems.length === 0 ? (
-                <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 bg-white/70 border border-gray-200 rounded-2xl p-4">
                   No gallery images.
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {galleryItems.map((item) => (
-                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div key={item.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                       <div className="relative aspect-square bg-gray-50">
                         {(() => {
                           const src = item.file ? URL.createObjectURL(item.file) : item.url;
@@ -366,7 +390,7 @@ export default function ManageWaifu() {
                         })()}
                         {item.removed && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xs font-semibold bg-white/90 px-2 py-1 rounded">
+                            <span className="text-xs font-semibold bg-white/90 px-2 py-1 rounded-xl">
                               Removed
                             </span>
                           </div>
@@ -412,14 +436,10 @@ export default function ManageWaifu() {
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={uploading}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={uploading}>
             {uploading ? (
               <>
-                <Loader className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
                 Saving...
               </>
             ) : (
@@ -432,32 +452,33 @@ export default function ManageWaifu() {
                 {editing ? 'Save Changes' : 'Add Waifu'}
               </>
             )}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
 
       {/* Waifu List */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Existing Waifus</h2>
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="text-lg font-extrabold text-gray-900">Existing Waifus</div>
+          <div className="text-sm text-gray-600">Keep names, images, and galleries up to date.</div>
         </div>
-        <ul className="divide-y divide-gray-200">
+        <ul className="divide-y divide-gray-100">
           {waifus.map((waifu) => (
-            <li key={waifu.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center space-x-4">
+            <li key={waifu.id} className="p-6 flex items-center justify-between gap-4 hover:bg-gray-50/70">
+              <div className="flex items-center gap-4 min-w-0">
                 <img
                   src={waifu.imageUrl}
                   alt={waifu.name}
-                  className="h-16 w-16 object-cover rounded-full border-2 border-pink-200"
+                  className="h-16 w-16 object-cover rounded-2xl border border-white/60"
                 />
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">{waifu.name}</h3>
-                  <p className="text-sm text-gray-500">{getAnimeName(waifu.animeId)}</p>
+                <div className="min-w-0">
+                  <div className="text-base font-extrabold text-gray-900 truncate">{waifu.name}</div>
+                  <div className="text-sm text-gray-600 truncate">{getAnimeName(waifu.animeId)}</div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-1">
                 {waifu.gallery?.length > 0 && (
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full flex items-center">
+                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full flex items-center">
                     <ImageIcon className="h-3 w-3 mr-1" />
                     {waifu.gallery.length}
                   </span>
@@ -465,18 +486,18 @@ export default function ManageWaifu() {
                 <button
                   type="button"
                   onClick={() => startEdit(waifu)}
-                  className="text-gray-500 hover:text-pink-600 p-2"
+                  className="h-9 w-9 rounded-xl inline-flex items-center justify-center text-gray-700 hover:bg-white transition border border-transparent hover:border-gray-200"
                   title="Edit"
                 >
-                  <Pencil className="h-5 w-5" />
+                  <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(waifu.id)}
-                  className="text-red-600 hover:text-red-900 p-2"
+                  className="h-9 w-9 rounded-xl inline-flex items-center justify-center text-gray-700 hover:bg-red-50 hover:text-red-700 transition"
                   title="Delete"
                 >
-                  <Trash2 className="h-5 w-5" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </li>
@@ -485,7 +506,25 @@ export default function ManageWaifu() {
             <li className="p-6 text-center text-gray-500">No waifus found. Add one above!</li>
           )}
         </ul>
-      </div>
+      </Card>
+
+      <ConfirmDialog
+        open={Boolean(waifuToDelete)}
+        title="Delete waifu?"
+        description="This will remove the waifu and their gallery."
+        confirmText="Delete"
+        danger
+        onClose={() => setWaifuToDelete(null)}
+        onConfirm={async () => {
+          if (!waifuToDelete) return;
+          try {
+            await deleteDoc(doc(db, 'waifus', waifuToDelete.id));
+            setWaifus((prev) => prev.filter((w) => w.id !== waifuToDelete.id));
+          } catch (err) {
+            console.error('Error deleting waifu:', err);
+          }
+        }}
+      />
     </div>
   );
 }

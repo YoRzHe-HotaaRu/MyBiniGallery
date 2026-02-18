@@ -19,7 +19,16 @@ export default function Signup() {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from?.pathname || '/';
+  const state = location.state as { from?: { pathname?: string } } | null;
+  const from = state?.from?.pathname || '/';
+
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (err && typeof err === 'object' && 'message' in err) {
+      const message = (err as Record<string, unknown>).message;
+      if (typeof message === 'string' && message.trim()) return message;
+    }
+    return fallback;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +55,8 @@ export default function Signup() {
       setTimeout(() => {
         navigate(from);
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign up');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to sign up'));
     } finally {
       setBusy(false);
     }
@@ -90,8 +99,8 @@ export default function Signup() {
       setTimeout(() => {
         navigate(from);
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign up with Google');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to sign up with Google'));
     } finally {
       setBusy(false);
     }

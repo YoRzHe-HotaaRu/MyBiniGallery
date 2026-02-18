@@ -23,7 +23,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <AnimatePresence mode="wait" initial={false}>
           <PageTransition key={location.pathname}>
             <Outlet />
