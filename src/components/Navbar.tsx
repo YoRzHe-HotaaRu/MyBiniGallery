@@ -122,7 +122,7 @@ export default function Navbar() {
                   </button>
                 </Link>
                 <Link to="/signup">
-                  <button className="h-10 px-4 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+                  <button className="h-10 px-4 rounded-xl font-semibold text-white bg-pink-600 shadow-sm shadow-pink-600/30 hover:bg-pink-700 hover:shadow-pink-600/40 active:bg-pink-800 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
                     Create account
                   </button>
                 </Link>
@@ -279,7 +279,7 @@ export default function Navbar() {
                       </Link>
                       <Link
                         to="/signup"
-                        className="flex items-center justify-center px-4 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+                        className="flex items-center justify-center px-4 py-3 rounded-2xl font-semibold text-white bg-pink-600 shadow-sm shadow-pink-600/30 hover:bg-pink-700 hover:shadow-pink-600/40 active:bg-pink-800 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
                         onClick={() => setMobileOpen(false)}
                       >
                         Create account

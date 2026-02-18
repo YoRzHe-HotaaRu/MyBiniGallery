@@ -211,7 +211,7 @@ export default function WaifuList() {
               action={
                 <Link
                   to="/anime"
-                  className="h-11 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 inline-flex items-center justify-center"
+                  className="h-11 px-5 rounded-xl font-semibold text-white bg-pink-600 hover:bg-pink-700 active:bg-pink-800 inline-flex items-center justify-center shadow-sm shadow-pink-600/30 hover:shadow-pink-600/40 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
                 >
                   Browse anime
                 </Link>
