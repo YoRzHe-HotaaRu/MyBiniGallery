@@ -69,7 +69,7 @@ export default function WaifuDetail() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <Card className="overflow-hidden lg:col-span-1">
             <Skeleton className="aspect-[3/4] w-full rounded-none" />
           </Card>
@@ -104,7 +104,7 @@ export default function WaifuDetail() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <Card className="overflow-hidden lg:col-span-1">
               <div className="relative">
                 <img
