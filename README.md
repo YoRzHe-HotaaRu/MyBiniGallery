@@ -1,11 +1,28 @@
 # MyBiniGalLery
 
-Anime + waifu gallery web app built with React, TypeScript, and Vite. Uses Firebase (Auth + Firestore + Analytics) for user/data management and Cloudinary for image uploads. Includes an admin area for managing anime series and waifu entries.
+My Bini is a modern anime + waifu gallery web app where you can browse series, explore character profiles, save favourites, and join the conversation with likes and comments. It’s built with React + TypeScript + Vite, powered by Firebase (Auth + Firestore + Analytics) and Cloudinary for fast image uploads. An admin area is included for managing anime series and waifu entries.
+
+## Screenshots
+
+### Home / Browsing
+
+![Homepage](screenshots/homepage_screen.jpg)
+
+![Anime list](screenshots/anime_page_screen.jpg)
+
+![Waifu gallery](screenshots/waifu_screen_page.jpg)
+
+### Detail / Comments
+
+![Waifu detail](screenshots/waifu_detail_page.jpg)
+
+![Comments](screenshots/gallery_comment_screen.jpg)
 
 ## Features
 
 - Browse anime series
 - Browse waifu cards and open waifu detail pages
+- Favourites, likes, and comments
 - Authentication (Email/Password + Google)
 - Admin-only routes for managing anime and waifus
 - Cloudinary-backed image uploads (cover + waifu images + gallery)

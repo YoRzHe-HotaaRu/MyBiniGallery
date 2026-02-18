@@ -222,11 +222,11 @@ export default function Navbar() {
             exit={{ opacity: 0 }}
           >
             <div
-              className="absolute inset-0 bg-black/45 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/55 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              className="absolute right-0 top-0 h-full w-[86%] max-w-sm bg-white/92 backdrop-blur border-l border-white/60 shadow-2xl"
+              className="absolute right-0 top-0 h-full w-[86%] max-w-sm bg-white border-l border-gray-200 shadow-2xl"
               initial={{ x: 30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 30, opacity: 0 }}
