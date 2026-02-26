@@ -25,12 +25,16 @@
     "baseUrl": "./",
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     }
   },
   "include": [
-    "src",
+    ".",
     "api"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }
