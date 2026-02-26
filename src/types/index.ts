@@ -1,3 +1,4 @@
+// @/src/types/index.ts
 export interface Anime {
   id: string;
   title: string;

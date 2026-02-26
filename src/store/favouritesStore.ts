@@ -1,3 +1,4 @@
+// @/src/store/favouritesStore.ts
 import { create } from 'zustand';
 import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
