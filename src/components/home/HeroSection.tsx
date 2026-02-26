@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function HeroSection() {
+    const { t } = useLanguage();
     const heroWallpapers = [
         'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1772128625/ed3f1914-d00f-4ffe-bfdc-9090b21efca4_zl2t3x.jpg',
         'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1772128626/Beatrice_Anime_x6exa5.webp',
@@ -40,10 +42,10 @@ export function HeroSection() {
 
             <div className="relative text-center py-20 px-4">
                 <h1 className="text-5xl font-extrabold text-white mb-6 drop-shadow">
-                    Welcome to <span className="text-pink-400">My Bini</span>
+                    {t.hero.title} <span className="text-pink-400">My Bini</span>
                 </h1>
                 <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow">
-                    Your ultimate gallery for anime waifus. Discover, collect, and admire your favorite characters in one place.
+                    {t.hero.subtitle}
                 </p>
                 <div className="flex justify-center space-x-4">
                     <Link to="/anime">
@@ -52,7 +54,7 @@ export function HeroSection() {
                             whileTap={{ scale: 0.95 }}
                             className="px-8 py-3 bg-pink-600 text-white rounded-full font-medium hover:bg-pink-700 transition-colors shadow-lg hover:shadow-xl"
                         >
-                            Browse Anime
+                            {t.hero.browseAnime}
                         </motion.button>
                     </Link>
                     <Link to="/waifus">
@@ -61,7 +63,7 @@ export function HeroSection() {
                             whileTap={{ scale: 0.95 }}
                             className="px-8 py-3 bg-white/95 text-pink-700 border-2 border-white/40 rounded-full font-medium hover:bg-white transition-colors"
                         >
-                            Explore Waifus
+                            {t.hero.exploreWaifus}
                         </motion.button>
                     </Link>
                 </div>

@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Film } from 'lucide-react';
-import { Anime } from '../../types';
-import { Card } from '../ui';
+import { Anime } from '@/types';
+import { Card } from '@/components/ui';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AnimeBrowseSection({ animes, loading }: { animes: Anime[]; loading: boolean }) {
+    const { t } = useLanguage();
+
     return (
         <section>
             <div className="flex items-center justify-between gap-4 mb-8">
@@ -12,12 +15,12 @@ export function AnimeBrowseSection({ animes, loading }: { animes: Anime[]; loadi
                         <Film className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Browse by Anime</h2>
-                        <p className="text-sm text-gray-500">Jump into a series, then explore the waifus inside</p>
+                        <h2 className="text-2xl font-bold text-gray-900">{t.animeBrowse.title}</h2>
+                        <p className="text-sm text-gray-500">{t.animeBrowse.subtitle}</p>
                     </div>
                 </div>
                 <Link to="/anime" className="text-pink-600 hover:text-pink-700 font-medium">
-                    View all
+                    {t.animeBrowse.viewAll}
                 </Link>
             </div>
 
@@ -56,7 +59,7 @@ export function AnimeBrowseSection({ animes, loading }: { animes: Anime[]; loadi
                                             {anime.title}
                                         </div>
                                         <div className="mt-1 inline-flex items-center gap-2 text-white/85 text-sm font-semibold">
-                                            View waifus
+                                            {t.animeBrowse.viewWaifus}
                                             <span className="translate-x-0 group-hover:translate-x-0.5 transition-transform">→</span>
                                         </div>
                                     </div>
@@ -67,9 +70,9 @@ export function AnimeBrowseSection({ animes, loading }: { animes: Anime[]; loadi
 
                     {animes.length === 0 ? (
                         <Card className="col-span-full p-8 text-center">
-                            <div className="text-lg font-extrabold text-gray-900">No anime yet</div>
+                            <div className="text-lg font-extrabold text-gray-900">{t.animeBrowse.noAnimeTitle}</div>
                             <div className="mt-2 text-sm text-gray-600">
-                                Add an anime first, then start building out waifu collections.
+                                {t.animeBrowse.noAnimeDesc}
                             </div>
                         </Card>
                     ) : null}

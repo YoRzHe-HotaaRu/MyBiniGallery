@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { Waifu } from '../../types';
-import { Card } from '../ui';
-import { SparkHeart } from '../icons/SparkHeart';
+import { db } from '@/config/firebase';
+import { Waifu } from '@/types';
+import { Card } from '@/components/ui';
+import { SparkHeart } from '@/components/icons/SparkHeart';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function RecentWaifusSection({ animeNameById }: { animeNameById: Record<string, string> }) {
+    const { t } = useLanguage();
     const [recentWaifus, setRecentWaifus] = useState<Waifu[]>([]);
     const [loadingRecent, setLoadingRecent] = useState(true);
 
@@ -41,12 +43,12 @@ export function RecentWaifusSection({ animeNameById }: { animeNameById: Record<s
                         <SparkHeart className="w-6 h-6" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Recently Added Waifus</h2>
-                        <p className="text-sm text-gray-500">Fresh drops in the gallery</p>
+                        <h2 className="text-2xl font-bold text-gray-900">{t.recentWaifus.title}</h2>
+                        <p className="text-sm text-gray-500">{t.recentWaifus.subtitle}</p>
                     </div>
                 </div>
                 <Link to="/waifus" className="text-pink-600 hover:text-pink-700 font-medium">
-                    View all
+                    {t.recentWaifus.viewAll}
                 </Link>
             </div>
 
@@ -85,7 +87,7 @@ export function RecentWaifusSection({ animeNameById }: { animeNameById: Record<s
                                     {waifu.name}
                                 </p>
                                 <p className="text-xs text-gray-500 truncate">
-                                    {animeNameById[waifu.animeId] ?? 'Unknown Series'}
+                                    {animeNameById[waifu.animeId] ?? t.recentWaifus.unknownSeries}
                                 </p>
                             </div>
                         </Link>
@@ -93,7 +95,7 @@ export function RecentWaifusSection({ animeNameById }: { animeNameById: Record<s
 
                     {recentWaifus.length === 0 && (
                         <Card className="col-span-full text-center py-10">
-                            <p className="text-gray-500">No waifus yet. Add some from the admin panel.</p>
+                            <p className="text-gray-500">{t.recentWaifus.empty}</p>
                         </Card>
                     )}
                 </div>

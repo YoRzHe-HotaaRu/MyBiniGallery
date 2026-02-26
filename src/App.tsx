@@ -7,6 +7,7 @@ import { auth, db } from '@/config/firebase';
 import { useAuthStore } from '@/store/authStore';
 import AppRoutes from '@/AppRoutes';
 import { User } from '@/types';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 function App() {
   const { setUser, setLoading } = useAuthStore();
@@ -15,7 +16,6 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          // Fetch user role from Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           const userData = (userDoc.data() ?? {}) as Partial<User>;
 
@@ -63,9 +63,11 @@ function App() {
   }, [setUser, setLoading]);
 
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

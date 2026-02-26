@@ -1,21 +1,27 @@
+// @/src/components/Navbar.tsx
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { auth } from '../config/firebase';
+import { useAuthStore } from '@/store/authStore';
+import { auth } from '@/config/firebase';
 import { signOut } from 'firebase/auth';
-import { ChevronDown, Heart, LogOut, Menu, Shield, User as UserIcon, X } from 'lucide-react';
+import { ChevronDown, Heart, Languages, LogOut, Menu, Shield, User as UserIcon, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthSuccessAnimation from './AuthSuccessAnimation';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Language } from '@/locales';
 
 export default function Navbar() {
   const { user } = useAuthStore();
+  const { lang, setLang, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogout, setShowLogout] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setUserMenuOpen(false);
@@ -26,8 +32,8 @@ export default function Navbar() {
     const onDown = (e: MouseEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
-      if (!userMenuRef.current) return;
-      if (!userMenuRef.current.contains(target)) setUserMenuOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) setUserMenuOpen(false);
+      if (langMenuRef.current && !langMenuRef.current.contains(target)) setLangMenuOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -48,16 +54,21 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Anime', path: '/anime' },
-    { name: 'Waifus', path: '/waifus' },
-    ...(user ? [{ name: 'Favourites', path: '/favourites' }] : []),
-    ...(user?.role === 'admin' ? [{ name: 'Admin', path: '/admin' }] : []),
+    { name: t.nav.home, path: '/' },
+    { name: t.nav.anime, path: '/anime' },
+    { name: t.nav.waifus, path: '/waifus' },
+    ...(user ? [{ name: t.nav.favourites, path: '/favourites' }] : []),
+    ...(user?.role === 'admin' ? [{ name: t.nav.admin, path: '/admin' }] : []),
   ];
 
   const activePath = location.pathname;
   const userLabel = user?.displayName?.trim() || user?.email || '';
   const userInitial = (userLabel[0] || 'U').toUpperCase();
+
+  const langOptions: { value: Language; label: string }[] = [
+    { value: 'en', label: 'English' },
+    { value: 'id', label: 'Indonesia' },
+  ];
 
   return (
     <header className="sticky top-0 z-50">
@@ -114,16 +125,64 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-white/60 bg-white/75 text-sm font-semibold text-gray-700 shadow-sm hover:bg-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                onClick={() => setLangMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={langMenuOpen}
+              >
+                <Languages className="h-4 w-4 text-pink-600" />
+                <span className="uppercase">{lang}</span>
+                <ChevronDown className={cn('h-3.5 w-3.5 text-gray-500 transition-transform', langMenuOpen ? 'rotate-180' : '')} />
+              </button>
+
+              <AnimatePresence>
+                {langMenuOpen ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                    transition={{ duration: 0.14 }}
+                    className="absolute right-0 mt-2 w-36 rounded-xl border border-white/60 bg-white/95 backdrop-blur shadow-[0_16px_45px_-30px_rgba(236,72,153,0.30)] overflow-hidden"
+                    role="menu"
+                  >
+                    {langOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setLang(opt.value); setLangMenuOpen(false); }}
+                        className={cn(
+                          'w-full flex items-center justify-between px-3 py-2 text-sm font-semibold transition-colors',
+                          lang === opt.value
+                            ? 'text-pink-700 bg-pink-50'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        )}
+                      >
+                        {opt.label}
+                        {lang === opt.value && (
+                          <span className="text-pink-500 text-xs">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+
             {!user ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Link to="/login">
                   <button className="h-10 px-4 rounded-xl font-semibold text-gray-800 hover:bg-white/70 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
-                    Sign in
+                    {t.nav.signIn}
                   </button>
                 </Link>
                 <Link to="/signup">
                   <button className="h-10 px-4 rounded-xl font-semibold text-white bg-pink-600 shadow-sm shadow-pink-600/30 hover:bg-pink-700 hover:shadow-pink-600/40 active:bg-pink-800 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
-                    Create account
+                    {t.nav.createAccount}
                   </button>
                 </Link>
               </div>
@@ -181,7 +240,7 @@ export default function Navbar() {
                           role="menuitem"
                         >
                           <UserIcon className="h-4 w-4 text-gray-600" />
-                          Profile
+                          {t.nav.profile}
                         </Link>
                         <Link
                           to="/favourites"
@@ -190,7 +249,7 @@ export default function Navbar() {
                           role="menuitem"
                         >
                           <Heart className="h-4 w-4 text-pink-600" />
-                          Favourites
+                          {t.nav.favourites}
                         </Link>
                         {user.role === 'admin' ? (
                           <Link
@@ -200,7 +259,7 @@ export default function Navbar() {
                             role="menuitem"
                           >
                             <Shield className="h-4 w-4 text-purple-600" />
-                            Admin
+                            {t.nav.admin}
                           </Link>
                         ) : null}
                         <button
@@ -210,7 +269,7 @@ export default function Navbar() {
                           role="menuitem"
                         >
                           <LogOut className="h-4 w-4 text-gray-600" />
-                          Sign out
+                          {t.nav.signOut}
                         </button>
                       </div>
                     </motion.div>
@@ -270,10 +329,32 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                     >
                       <span>{l.name}</span>
-                      {isActive ? <span className="text-xs font-extrabold">Active</span> : null}
+                      {isActive ? <span className="text-xs font-extrabold">{t.nav.active}</span> : null}
                     </Link>
                   );
                 })}
+
+                {/* Mobile Language Switcher */}
+                <div className="pt-2">
+                  <p className="px-4 pb-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Bahasa / Language</p>
+                  <div className="flex gap-2 px-4">
+                    {langOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setLang(opt.value)}
+                        className={cn(
+                          'flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors',
+                          lang === opt.value
+                            ? 'bg-pink-600 text-white border-pink-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="pt-3 border-t border-gray-100 mt-3 space-y-2">
                   {!user ? (
@@ -284,14 +365,14 @@ export default function Navbar() {
                         onClick={() => setMobileOpen(false)}
                       >
                         <UserIcon className="h-4 w-4 text-gray-600" />
-                        Sign in
+                        {t.nav.signIn}
                       </Link>
                       <Link
                         to="/signup"
                         className="flex items-center justify-center px-4 py-3 rounded-2xl font-semibold text-white bg-pink-600 shadow-sm shadow-pink-600/30 hover:bg-pink-700 hover:shadow-pink-600/40 active:bg-pink-800 transition focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
                         onClick={() => setMobileOpen(false)}
                       >
-                        Create account
+                        {t.nav.createAccount}
                       </Link>
                     </>
                   ) : (
@@ -302,7 +383,7 @@ export default function Navbar() {
                         onClick={() => setMobileOpen(false)}
                       >
                         <UserIcon className="h-4 w-4 text-gray-600" />
-                        Profile
+                        {t.nav.profile}
                       </Link>
                       <button
                         type="button"
@@ -310,7 +391,7 @@ export default function Navbar() {
                         className="w-full flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-gray-900 hover:bg-gray-50"
                       >
                         <LogOut className="h-4 w-4 text-gray-600" />
-                        Sign out
+                        {t.nav.signOut}
                       </button>
                     </>
                   )}

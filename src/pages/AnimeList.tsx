@@ -6,8 +6,10 @@ import { Anime } from '@/types';
 import { Search } from 'lucide-react';
 import { Card, EmptyState, Input, PageHeader, Skeleton } from '@/components/ui';
 import { AnimeCard } from '@/components/anime/AnimeCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AnimeList() {
+  const { t } = useLanguage();
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [filteredAnimes, setFilteredAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,14 +52,14 @@ export default function AnimeList() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Anime Series"
-        subtitle="Pick a series to explore its waifu gallery."
+        title={t.animeList.title}
+        subtitle={t.animeList.subtitle}
         actions={
           <div className="w-full sm:w-80">
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search anime…"
+              placeholder={t.animeList.searchPlaceholder}
               left={<Search className="h-4 w-4" />}
             />
           </div>
@@ -86,8 +88,8 @@ export default function AnimeList() {
 
           {filteredAnimes.length === 0 ? (
             <EmptyState
-              title="No anime found"
-              description="Try a different search term."
+              title={t.animeList.notFoundTitle}
+              description={t.animeList.notFoundDesc}
             />
           ) : null}
         </>
