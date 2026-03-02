@@ -1,10 +1,10 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import Navbar from './Navbar';
-import PageTransition from './PageTransition';
+import Navbar from '@/components/navs/Navbar';
+import PageTransition from '@/components/navs/PageTransition';
 import { useEffect } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { useFavouritesStore } from '../store/favouritesStore';
+import { useAuthStore } from '@/store/authStore';
+import { useFavouritesStore } from '@/store/favouritesStore';
 
 export default function Layout() {
   const location = useLocation();

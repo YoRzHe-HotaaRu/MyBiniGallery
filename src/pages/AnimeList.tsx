@@ -1,12 +1,15 @@
+// @/src/pages/AnimeList.tsx
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../config/firebase';
-import { Anime } from '../types';
-import { Link } from 'react-router-dom';
+import { db } from '@/config/firebase';
+import { Anime } from '@/types';
 import { Search } from 'lucide-react';
-import { Card, EmptyState, Input, PageHeader, Skeleton } from '../components/ui';
+import { Card, EmptyState, Input, PageHeader, Skeleton } from '@/components/ui';
+import { AnimeCard } from '@/components/anime/AnimeCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AnimeList() {
+  const { t } = useLanguage();
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [filteredAnimes, setFilteredAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +20,7 @@ export default function AnimeList() {
   }, []);
 
   useEffect(() => {
-    const filtered = animes.filter(anime => 
+    const filtered = animes.filter(anime =>
       anime.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredAnimes(filtered);
@@ -49,14 +52,14 @@ export default function AnimeList() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Anime Series"
-        subtitle="Pick a series to explore its waifu gallery."
+        title={t.animeList.title}
+        subtitle={t.animeList.subtitle}
         actions={
           <div className="w-full sm:w-80">
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search anime…"
+              placeholder={t.animeList.searchPlaceholder}
               left={<Search className="h-4 w-4" />}
             />
           </div>
@@ -79,39 +82,14 @@ export default function AnimeList() {
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredAnimes.map((anime) => (
-              <Link
-                key={anime.id}
-                to={`/waifus?anime=${anime.id}`}
-                className="group block"
-              >
-                <Card className="overflow-hidden transition-shadow hover:shadow-[0_25px_60px_-35px_rgba(236,72,153,0.40)]">
-                  <div className="aspect-[2/3] relative overflow-hidden w-full">
-                    <img
-                      src={anime.coverImage}
-                      alt={anime.title}
-                      className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent opacity-85 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <div className="text-white font-extrabold leading-tight line-clamp-2">
-                        {anime.title}
-                      </div>
-                      <div className="mt-1 text-white/80 text-xs line-clamp-2">
-                        {anime.description}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+              <AnimeCard key={anime.id} anime={anime} />
             ))}
           </div>
 
           {filteredAnimes.length === 0 ? (
             <EmptyState
-              title="No anime found"
-              description="Try a different search term."
+              title={t.animeList.notFoundTitle}
+              description={t.animeList.notFoundDesc}
             />
           ) : null}
         </>

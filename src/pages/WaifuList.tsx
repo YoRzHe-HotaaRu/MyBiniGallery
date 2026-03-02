@@ -1,19 +1,17 @@
+// @/src/pages/WaifuList.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { useSearchParams, Link } from 'react-router-dom';
-import { db } from '../config/firebase';
-import { Anime, Waifu } from '../types';
-import { ArrowLeft, Heart, Search, Sparkles } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useAuthStore } from '../store/authStore';
-import { useFavouritesStore } from '../store/favouritesStore';
-import { Card, EmptyState, Input, PageHeader, Skeleton } from '../components/ui';
+import { db } from '@/config/firebase';
+import { Anime, Waifu } from '@/types';
+import { EmptyState } from '@/components/ui';
+import { WaifuCard } from '@/components/waifus/WaifuCard';
+import { WaifuGridSkeleton } from '@/components/waifus/WaifuGridSkeleton';
+import { WaifuListHeader } from '@/components/waifus/WaifuListHeader';
 
 export default function WaifuList() {
   const [searchParams] = useSearchParams();
   const animeIdFilter = searchParams.get('anime');
-  const { user } = useAuthStore();
-  const { isFavourite, toggleFavourite } = useFavouritesStore();
 
   const [waifus, setWaifus] = useState<Waifu[]>([]);
   const [animes, setAnimes] = useState<Anime[]>([]);
@@ -94,113 +92,25 @@ export default function WaifuList() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={
-          <span className="inline-flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-pink-600" />
-            {animeIdFilter ? `Waifus from ${getAnimeName(animeIdFilter)}` : 'Waifu Gallery'}
-          </span>
-        }
-        subtitle={
-          animeIdFilter
-            ? 'Browse the collection for this series, then open a waifu for likes and comments.'
-            : 'Browse the full collection. Use search to find your favourites fast.'
-        }
-        actions={
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="w-full sm:w-96">
-              <Input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search waifu or series…"
-                left={<Search className="h-4 w-4" />}
-              />
-            </div>
-            {animeIdFilter ? (
-              <Link
-                to="/anime"
-                className="inline-flex items-center gap-2 h-11 px-4 rounded-xl font-semibold text-gray-800 hover:bg-white/70 transition border border-white/60 bg-white/60 backdrop-blur shadow-sm"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Anime
-              </Link>
-            ) : null}
-          </div>
-        }
+      <WaifuListHeader
+        animeIdFilter={animeIdFilter}
+        animeName={animeIdFilter ? getAnimeName(animeIdFilter) : ''}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
 
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="aspect-[3/4] w-full rounded-none" />
-              <div className="p-4 space-y-2">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            </Card>
-          ))}
-        </div>
+        <WaifuGridSkeleton />
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredWaifus.map((waifu) => (
-              <Link key={waifu.id} to={`/waifu/${waifu.id}`} className="group block">
-                <Card className="overflow-hidden transition-shadow hover:shadow-[0_25px_60px_-35px_rgba(236,72,153,0.40)]">
-                  <div className="aspect-[3/4] relative overflow-hidden">
-                    {(() => {
-                      const images = [waifu.imageUrl, ...(waifu.gallery ?? [])].filter(Boolean);
-                      const activeIndex = images.length > 0 ? tick % images.length : 0;
-                      const activeSrc = images[activeIndex] ?? waifu.imageUrl;
-
-                      return (
-                        <AnimatePresence mode="sync" initial={false}>
-                          <motion.img
-                            key={activeSrc}
-                            src={activeSrc}
-                            alt={waifu.name}
-                            className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-                            initial={{ opacity: 0, scale: 1.03 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.99 }}
-                            transition={{ duration: 0.5, ease: 'easeInOut' }}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </AnimatePresence>
-                      );
-                    })()}
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-85 group-hover:opacity-100 transition-opacity duration-300" />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!user) return;
-                        toggleFavourite(user.uid, waifu.id);
-                      }}
-                      className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-white/85 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-                      aria-label="Toggle favourite"
-                    >
-                      <Heart
-                        className={`h-5 w-5 ${
-                          isFavourite(waifu.id) ? 'text-pink-600 fill-pink-600' : 'text-gray-600'
-                        }`}
-                      />
-                    </button>
-
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <div className="text-white font-extrabold leading-tight truncate">
-                        {waifu.name}
-                      </div>
-                      <div className="text-white/80 text-xs truncate">
-                        {getAnimeName(waifu.animeId)}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+              <WaifuCard
+                key={waifu.id}
+                waifu={waifu}
+                animeName={getAnimeName(waifu.animeId)}
+                tick={tick}
+              />
             ))}
           </div>
 

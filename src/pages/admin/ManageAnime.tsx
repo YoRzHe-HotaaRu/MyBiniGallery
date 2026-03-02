@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { uploadToCloudinary } from '../../lib/cloudinary';
-import { Anime } from '../../types';
+import { db } from '@/config/firebase';
+import { uploadToCloudinary } from '@/lib/cloudinary';
+import { Anime } from '@/types';
 import { ArrowLeft, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Skeleton, Textarea } from '../../components/ui';
+import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Skeleton, Textarea } from '@/components/ui';
 
 export default function ManageAnime() {
   const [animes, setAnimes] = useState<Anime[]>([]);
@@ -175,7 +175,7 @@ export default function ManageAnime() {
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
             />
           </div>
-          
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <Button

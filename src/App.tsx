@@ -1,23 +1,24 @@
+// @/src/App.tsx
 import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from './config/firebase';
-import { useAuthStore } from './store/authStore';
-import AppRoutes from './AppRoutes';
-import { User } from './types';
+import { auth, db } from '@/config/firebase';
+import { useAuthStore } from '@/store/authStore';
+import AppRoutes from '@/routes/AppRoutes';
+import { User } from '@/types';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
-function App() {
+export default function App() {
   const { setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          // Fetch user role from Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           const userData = (userDoc.data() ?? {}) as Partial<User>;
-          
+
           const role: User['role'] = userData.role === 'admin' ? 'admin' : 'user';
           const createdAt = typeof userData.createdAt === 'number' ? userData.createdAt : Date.now();
           const displayName =
@@ -62,10 +63,10 @@ function App() {
   }, [setUser, setLoading]);
 
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
-
-export default App;

@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import PageTransition from './PageTransition';
+import PageTransition from '../navs/PageTransition';
 
 export default function AuthLayout() {
   const location = useLocation();

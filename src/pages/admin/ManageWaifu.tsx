@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
-import { uploadToCloudinary } from '../../lib/cloudinary';
-import { Anime, Waifu } from '../../types';
+import { db } from '@/config/firebase';
+import { uploadToCloudinary } from '@/lib/cloudinary';
+import { Anime, Waifu } from '@/types';
 import { ArrowLeft, Image as ImageIcon, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Select, Skeleton, Textarea } from '../../components/ui';
+import { Button, Card, CardHeader, ConfirmDialog, Input, PageHeader, Select, Skeleton, Textarea } from '@/components/ui';
 
 export default function ManageWaifu() {
   const [waifus, setWaifus] = useState<Waifu[]>([]);
@@ -144,7 +144,7 @@ export default function ManageWaifu() {
       setGalleryImages(null);
       setEditing(null);
       setGalleryItems([]);
-      
+
       // Reset file inputs
       (document.getElementById('main-image') as HTMLInputElement).value = '';
       (document.getElementById('gallery-images') as HTMLInputElement).value = '';
@@ -296,7 +296,7 @@ export default function ManageWaifu() {
               </Select>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Age (Optional)</label>
             <Input value={age} onChange={(e) => setAge(e.target.value)} placeholder="e.g. 17" className="mt-1" />
@@ -433,7 +433,7 @@ export default function ManageWaifu() {
               )}
             </div>
           )}
-          
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <Button type="submit" disabled={uploading}>

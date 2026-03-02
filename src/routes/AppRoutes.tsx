@@ -1,19 +1,20 @@
+// @/src/AppRoutes.tsx
 import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import AuthLayout from './components/AuthLayout';
-import AuthGuard from './components/AuthGuard';
-import Home from './pages/Home';
-import AnimeList from './pages/AnimeList';
-import WaifuList from './pages/WaifuList';
-import WaifuDetail from './pages/WaifuDetail';
-import Favourites from './pages/Favourites';
-import Profile from './pages/Profile';
-import PublicProfile from './pages/PublicProfile';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ManageAnime from './pages/admin/ManageAnime';
-import ManageWaifu from './pages/admin/ManageWaifu';
+import Layout from '@/components/ui/Layout';
+import AuthLayout from '@/components/auth/AuthLayout';
+import AuthGuard from '@/components/auth/AuthGuard';
+import Home from '@/pages/Home';
+import AnimeList from '@/pages/AnimeList';
+import WaifuList from '@/pages/WaifuList';
+import WaifuDetail from '@/pages/WaifuDetail';
+import Favourites from '@/pages/Favourites';
+import Profile from '@/pages/Profile';
+import PublicProfile from '@/pages/PublicProfile';
+import Login from '@/pages/Login';
+import CreateAccount from '@/pages/CreateAccount';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import ManageAnime from '@/pages/admin/ManageAnime';
+import ManageWaifu from '@/pages/admin/ManageWaifu';
 
 export default function AppRoutes() {
   return (
@@ -69,7 +70,7 @@ export default function AppRoutes() {
 
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<CreateAccount />} />
       </Route>
     </Routes>
   );

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db } from '@/config/firebase';
 import { Film, Sparkles } from 'lucide-react';
-import { Card, PageHeader, Skeleton } from '../../components/ui';
+import { Card, PageHeader, Skeleton } from '@/components/ui';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
